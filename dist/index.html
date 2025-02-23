@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./output.css" rel="stylesheet" />
+    <title>ARCDEM</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+  </head>
+  <body>
+    <div class="header">
+      <div class="container">
+        <div
+          class="header__wrapper h-[106px] flex justify-between items-center px-[56px]"
+        >
+          <div class="flex gap-[40px] items-center">
+            <h1 class="text-primary">ARCDEM</h1>
+            <h3>Automated Road Crack Detection and Mapping System</h3>
+          </div>
+          <div class="flex justify-between">
+            <!-- <img src="/img/add-icon.png" alt="" /> -->
+            <div
+              class="flex px-[21px] py-[11px] bg-primary rounded-[25px] items-center gap-[14.72px]"
+            >
+              <p>Search Location</p>
+              <img src="/img/search-loc.png" alt="" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mapping">
+      <div class="container">
+        <div class="mapping__wrapper grid grid-flow-col grid-cols-[30%_70%]">
+          <div class="map__location grid">
+            <h2 class="bg-dark allindent text-light py-1">Location</h2>
+            <span class="bg-primary flex gap-1 items-center py-4 allindent">
+              <img src="/img/pin-loc.png" alt="" />
+              <p>Cavite State University</p>
+            </span>
+            <p class="font-bold detailed-info">Detailed Information</p>
+            <div class="detailed-info">
+              <span class="flex gap-[15px] items-center">
+                <img src="/img/length.png" alt="" />
+                <p class="font-bold">Length of Road Monitored:</p>
+              </span>
+              <p class="pl-[56px]">900 meters</p>
+            </div>
+            <div class="detailed-info">
+              <span class="flex gap-[15px] items-center">
+                <img src="/img/lanes.png" alt="" />
+                <p class="font-bold">Number of Lanes:</p>
+              </span>
+              <p class="pl-[56px]">2 lanes</p>
+            </div>
+            <div class="detailed-info">
+              <span class="flex gap-[15px] items-center">
+                <img src="/img/cracks-detected.png" alt="" />
+                <p class="font-bold">Types of Cracks Detected:</p>
+              </span>
+              <span class="grid gap-2">
+                <p class="pl-[56px]">Transverse Cracks (12)</p>
+                <p class="pl-[56px]">Longitudinal Cracks (5)</p>
+                <p class="pl-[56px]">Multiple Cracks (7)</p>
+              </span>
+            </div>
+            <div class="detailed-info">
+              <span class="flex gap-[15px] items-center">
+                <img src="/img/total-crack.png" alt="" />
+                <p class="font-bold">Total Number of Cracks:</p>
+              </span>
+              <p class="pl-[56px]">24 cracks</p>
+            </div>
+            <span class="bg-primary flex gap-1 items-center py-4 allindent">
+              <img src="/img/pin-loc.png" alt="" />
+              <p>Other Locations</p>
+            </span>
+            <div class="detailed-info">
+              <span class="flex gap-[15px] items-center">
+                <img src="/img/length.png" alt="" />
+                <p class="font-bold">Carmona Public Market:</p>
+              </span>
+              <p class="pl-[56px]">Carmona, Cavite</p>
+            </div>
+          </div>
+          <div class="map__gis flex flex-col">
+            <h2 class="px-6 text-light py-1 bg-primary">GIS System</h2>
+            <div id="map" class="w-full h-full"></div>
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <script>
+              let map = L.map("map").setView([14.2, 120.882], 13);
+
+              L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution:
+                  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+              }).addTo(map);
+            </script>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

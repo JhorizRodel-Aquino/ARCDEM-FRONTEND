@@ -1,0 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply font-inter overflow-x-hidden text-black/80;
+  }
+
+  .container {
+    @apply max-w-[1024px] w-full mx-auto;
+  }
+
+  h1 {
+    @apply text-[48px]/[58.1px] font-extrabold ;
+  }
+  h2 {
+    @apply text-[32px]/[38.7px] font-bold;
+  }
+  h3 {
+    @apply text-[24px]/[29px] italic;
+  }
+  h6 {
+    @apply text-[14px]/[16.9px];
+  }
+  p {
+    @apply text-[20px]/[24.2px];
+  }
+
+  a {
+    @apply cursor-pointer;
+  }
+
+  .allindent {
+    padding-left: 56px;
+  }
+
+  .detailed-info{
+    @apply py-[10px] allindent border-b-2
+  }
+}
