@@ -14,7 +14,7 @@
   }
 
   h1 {
-    @apply text-[48px]/[58.1px] font-extrabold ;
+    @apply text-[48px]/[58.1px] font-extrabold;
   }
   h2 {
     @apply text-[32px]/[38.7px] font-bold;
@@ -37,7 +37,11 @@
     padding-left: 56px;
   }
 
-  .detailed-info{
-    @apply py-[10px] allindent border-b-2
+  .detailed-info {
+    @apply py-[10px] allindent border-b-2;
+  }
+
+  .crack-info {
+    @apply py-[19px] allindent border-b-2;
   }
 }

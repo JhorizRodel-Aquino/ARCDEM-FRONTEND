@@ -34,9 +34,9 @@
         </div>
       </div>
     </div>
-    <div class="mapping">
+    <div class="mapping relative">
       <div class="container">
-        <div class="mapping__wrapper grid grid-flow-col grid-cols-[30%_70%]">
+        <div class="mapping__wrapper grid grid-flow-col grid-cols-[30%_70%] ">
           <div class="map__location grid">
             <h2 class="bg-dark allindent text-light py-1">Location</h2>
             <span class="bg-primary flex gap-1 items-center py-4 allindent">
@@ -90,19 +90,39 @@
           </div>
           <div class="map__gis flex flex-col">
             <h2 class="px-6 text-light py-1 bg-primary">GIS System</h2>
-            <div id="map" class="w-full h-full"></div>
+            <div id="map" class="w-full h-full z-10"></div>
             <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-            <script>
-              let map = L.map("map").setView([14.2, 120.882], 13);
-
-              L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                attribution:
-                  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-              }).addTo(map);
-            </script>
+            <script src="marker.js"></script>
           </div>
         </div>
       </div>
     </div>
+    <div class="crack">
+      <div class="container">
+        <div class="crack__wrapper absolute top-[106px] z-10 left-[-100%] duration-900 ease-in-out" id="crack">
+          <div class="flex gap-10 bg-dark px-[25px] text-light py-1 h-[46.97px] items-center">
+            <p>Coordinates: 38.8951° N, -77.0364° W</p>
+            <p>Road Assessed: 5m</p>
+          </div>
+          <span class="bg-primary flex gap-1 items-center py-4 allindent">
+            <img src="/img/pin-loc.png" alt="" />
+            <p>Cavite State University</p>
+          </span>
+          <div  id="crack-details" class=" min-h-[602px] bg-light">
+            <!-- <div class="crack-info grid gap-2">
+              <h3 class="font-bold">Crack 2:</h3>
+              <p><span class="font-bold">Type: </span>Longitudinal</p>
+              <p><span class="font-bold">Severity: </span>N</p>
+              <p>
+                <span class="font-bold">Recommended Solution: </span
+                >Grooving/Sealing
+              </p> -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div></div>
   </body>
 </html>

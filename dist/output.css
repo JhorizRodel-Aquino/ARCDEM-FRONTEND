@@ -502,6 +502,13 @@ a{
   padding-bottom: 10px;
 }
 
+.crack-info {
+  padding-left: 56px;
+  border-bottom-width: 2px;
+  padding-top: 19px;
+  padding-bottom: 19px;
+}
+
 *, ::before, ::after{
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
@@ -636,6 +643,54 @@ a{
   }
 }
 
+.fixed{
+  position: fixed;
+}
+
+.absolute{
+  position: absolute;
+}
+
+.relative{
+  position: relative;
+}
+
+.top-\[\]{
+  top: ;
+}
+
+.top-\[106px\]{
+  top: 106px;
+}
+
+.left-0{
+  left: 0px;
+}
+
+.left-\[-1\]{
+  left: -1;
+}
+
+.left-\[-1p\]{
+  left: -1p;
+}
+
+.left-\[-1px\]{
+  left: -1px;
+}
+
+.left-\[-100\%\]{
+  left: -100%;
+}
+
+.left-\[-1\%\]{
+  left: -1%;
+}
+
+.z-10{
+  z-index: 10;
+}
+
 .flex{
   display: flex;
 }
@@ -650,6 +705,34 @@ a{
 
 .h-full{
   height: 100%;
+}
+
+.h-\[49px\]{
+  height: 49px;
+}
+
+.h-\[46\.97px\]{
+  height: 46.97px;
+}
+
+.min-h-0{
+  min-height: 0px;
+}
+
+.min-h-\[200px\]{
+  min-height: 200px;
+}
+
+.min-h-\[500px\]{
+  min-height: 500px;
+}
+
+.min-h-\[600px\]{
+  min-height: 600px;
+}
+
+.min-h-\[602px\]{
+  min-height: 602px;
 }
 
 .w-full{
@@ -696,6 +779,14 @@ a{
   gap: 40px;
 }
 
+.gap-5{
+  gap: 1.25rem;
+}
+
+.gap-10{
+  gap: 2.5rem;
+}
+
 .rounded-\[25px\]{
   border-radius: 25px;
 }
@@ -710,6 +801,11 @@ a{
   background-color: rgb(210 183 70 / var(--tw-bg-opacity));
 }
 
+.bg-light{
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+
 .px-6{
   padding-left: 1.5rem;
   padding-right: 1.5rem;
@@ -718,6 +814,11 @@ a{
 .px-\[21px\]{
   padding-left: 21px;
   padding-right: 21px;
+}
+
+.px-\[56px\]{
+  padding-left: 56px;
+  padding-right: 56px;
 }
 
 .py-1{
@@ -735,13 +836,22 @@ a{
   padding-bottom: 11px;
 }
 
-.px-\[56px\]{
-  padding-left: 56px;
-  padding-right: 56px;
+.px-\[\]{
+  padding-left: ;
+  padding-right: ;
+}
+
+.px-\[25px\]{
+  padding-left: 25px;
+  padding-right: 25px;
 }
 
 .pl-\[56px\]{
   padding-left: 56px;
+}
+
+.indent-\[56px\]{
+  text-indent: 56px;
 }
 
 .font-bold{
@@ -756,4 +866,12 @@ a{
 .text-primary{
   --tw-text-opacity: 1;
   color: rgb(210 183 70 / var(--tw-text-opacity));
+}
+
+.duration-300{
+  transition-duration: 300ms;
+}
+
+.ease-in-out{
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
