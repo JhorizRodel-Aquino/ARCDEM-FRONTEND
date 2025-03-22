@@ -44,4 +44,12 @@
   .crack-info {
     @apply py-[19px] allindent border-b-2;
   }
+
+  #search-img{
+    width: 1000px;
+  }
+
+  [v-cloak] {
+    display: none;
+}
 }
