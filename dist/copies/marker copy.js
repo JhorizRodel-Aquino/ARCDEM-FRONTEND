@@ -100,3 +100,153 @@ map.on("click", () => {
 
 // Add markers to the map
 addMarkers(markerData);
+
+
+// region: [
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 1,
+//             n_assess: 1,
+//             n_cracks: {
+//               longi: 6,
+//               multi: 0,
+//               trans: 1,
+//             },
+//             name: "Region",
+//             parent_id: null,
+//           },
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 4,
+//             n_assess: 1,
+//             n_cracks: {
+//               longi: 0,
+//               multi: 1,
+//               trans: 1,
+//             },
+//             name: "Region2",
+//             parent_id: null,
+//           },
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 7,
+//             n_assess: 4,
+//             n_cracks: {
+//               longi: 2,
+//               multi: 2,
+//               trans: 4,
+//             },
+//             name: "Region3",
+//             parent_id: null,
+//           },
+//         ],
+//         city: [
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 1,
+//             n_assess: 1,
+//             n_cracks: {
+//               longi: 34,
+//               multi: 0,
+//               trans: 1,
+//             },
+//             name: "City",
+//             parent_id: null,
+//           },
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 4,
+//             n_assess: 1,
+//             n_cracks: {
+//               longi: 13,
+//               multi: 1,
+//               trans: 1,
+//             },
+//             name: "City2",
+//             parent_id: null,
+//           },
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 7,
+//             n_assess: 4,
+//             n_cracks: {
+//               longi: 2,
+//               multi: 2,
+//               trans: 4,
+//             },
+//             name: "City3",
+//             parent_id: null,
+//           },
+//         ],
+//         province: [
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 1,
+//             n_assess: 1,
+//             n_cracks: {
+//               longi: 1,
+//               multi: 12,
+//               trans: 1,
+//             },
+//             name: "Province",
+//             parent_id: null,
+//           },
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 4,
+//             n_assess: 1,
+//             n_cracks: {
+//               longi: 0,
+//               multi: 1,
+//               trans: 1,
+//             },
+//             name: "Province2",
+//             parent_id: null,
+//           },
+//           {
+//             date: "2025-02-28 12:53:20",
+//             id: 7,
+//             n_assess: 4,
+//             n_cracks: {
+//               longi: 2,
+//               multi: 2,
+//               trans: 4,
+//             },
+//             name: "Province3",
+//             parent_id: null,
+//           },
+//         ],
+//         cracks: [
+//           {
+//             segment_id: 1,
+//             start_coor: [-14.5995264, 120.9842123],
+//             end_coor: [-14.6325006, 121.9502079],
+//             date_created: "20250228_12-53-20",
+//             cracks: [
+//               {
+//                 type: "longitudinal",
+//                 severity: "narrow",
+//               },
+//               {
+//                 type: "transverse",
+//                 severity: "wide",
+//               },
+//             ],
+//           },
+//           {
+//             segment_id: 2,
+//             start_coor: [-15.5995264, 120.9842123],
+//             end_coor: [-14.6325406, 121.9572079],
+//             date_created: "20250228_12-53-20",
+//             cracks: [
+//               {
+//                 type: "multiple",
+//                 severity: "narrow",
+//               },
+//               {
+//                 type: "transverse",
+//                 severity: "wide",
+//               },
+//             ],
+//           },
+//         ],

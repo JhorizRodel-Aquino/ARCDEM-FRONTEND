@@ -1,10 +1,10 @@
-let markerData = {
+let assessment = {
   Indang: [
     {
       coords: [14.199637, 120.882066],
       cracks: [
         {
-          type: "Transverse Crack",
+          type: "Transverse Crack222",
           severity: "High",
           recommendedSolution: "Seal with hot mix asphalt.",
         },
@@ -24,7 +24,7 @@ let markerData = {
       coords: [14.199536, 120.882067],
       cracks: [
         {
-          type: "Transverse Crack",
+          type: "Transverse Crack111",
           severity: "High",
           recommendedSolution: "Seal with hot mix asphalt.",
         },
@@ -44,7 +44,7 @@ let markerData = {
       coords: [14.199939, 120.882069],
       cracks: [
         {
-          type: "Transverse Crack",
+          type: "Transverse Crack333",
           severity: "High",
           recommendedSolution: "Seal with hot mix asphalt.",
         },
@@ -125,7 +125,7 @@ function addMarkers(data) {
       marker.on("click", (e) => {
         e.originalEvent.stopPropagation(); // Prevent map click event from firing
         displayMultipleCracks(item.cracks); // Handle multiple cracks
-        document.getElementById("crack").classList.remove("left-[-100%]");
+        document.getElementById("crack").classList.remove("-translate-x-full");
         document.getElementById("crack").style.left = "0";
       });
     });
@@ -162,6 +162,6 @@ map.on("click", () => {
 });
 
 // Add markers to the map
-addMarkers(markerData);
+addMarkers(assessment);
 
 

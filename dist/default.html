@@ -11,10 +11,13 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+    />
   </head>
   <body class="bg-gray-200 relative">
-    <nav
+    <header
       class="header border-b-[8px] border-gray-200 bg-light absolute top-0 left-[50%] translate-x-[-50%] z-20 w-full"
     >
       <div class="container">
@@ -30,7 +33,7 @@
           </div>
         </div>
       </div>
-    </nav>
+    </header>
     <div class="mapping relative">
       <div class="container">
         <div
@@ -39,6 +42,7 @@
           <div
             class="map__location vue flex flex-col border-r-[8px] border-gray-200 h-dvh relative pt-[114px]"
           >
+
             <div
               class="bg-dark flex justify-between px-6 py-1 items-center sticky top-0"
             >
@@ -58,31 +62,41 @@
                 </span>
               </div>
             </div>
+            <div class="sort__by bg-light text-dark px-6 py-3 border-y-2 ">
+              <label for="sort__loc">Sort locations by: </label>
+              <select name="sort__loc" id="sort__loc" class="text-dark" v-model="selectedOption" @change="onOptionChange">
+                <option value="region">Region</option>
+                <option value="city">City</option>
+                <option value="province">Province</option>
+              </select>
+            </div>
             <div id="app" class="items-start overflow-y-scroll" v-cloak>
               <div
                 class="municipality"
-                v-for="(prov, index) in provs"
+                v-for="(item, index) in filteredData"
                 :key="index"
               >
                 <!-- Click event toggles details -->
                 <span
                   class="pin_loc bg-primary flex gap-1 items-center py-4 allindent cursor-pointer border-y-[1px]"
-                  @click="toggleDetails(index, prov.id)"
+                  @click="toggleDetails(index, item.id)"
                 >
                   <img src="/img/pin-loc.png" alt="" />
-                  <p v-if="prov.name">{{ prov.name }}</p>
+                  <p v-if="item.name">{{ item.name }}</p>
                   <!-- Added v-if for safety -->
                 </span>
 
                 <!-- Details Section -->
-                <div class="summary__detailed" v-if="expandedIndex === index">
-                  <p class="font-bold detailed-info">Detailed Information</p>
+                <div class="summary__detailed" v-if="expandedIndex === index && info" v-for="(assess, index) in assessment.assessments">
+                  <p class="font-bold detailed-info" >Detailed Information</p>
                   <div class="detailed-info">
                     <span class="flex gap-[15px] items-center">
                       <img src="/img/length.png" alt="" />
-                      <p class="font-bold">Length of Road Monitored:</p>
+                      <p class="font-bold">Length of Road Monitored: {{ assess.id }}</p>
                     </span>
-                    <p class="pl-[56px]">{{ prov.n_assess * 5 || "N/A" }} meters</p>
+                    <p class="pl-[56px]">
+                      {{ info.n_assess * 5 || "N/A" }} meters
+                    </p>
                   </div>
                   <div class="detailed-info">
                     <span class="flex gap-[15px] items-center">
@@ -90,7 +104,7 @@
                       <p class="font-bold">Number of Assessments:</p>
                     </span>
                     <p class="pl-[56px]">
-                      {{ prov.n_assess || "N/A" }} assessments
+                      {{ info.n_assess || "N/A" }} assessments
                     </p>
                   </div>
                   <div class="detailed-info">
@@ -100,13 +114,13 @@
                     </span>
                     <span class="grid gap-2">
                       <p class="pl-[56px]">
-                        Transverse Cracks ({{ prov.n_cracks.trans || 0 }})
+                        Transverse Cracks ({{ info.n_cracks.trans || 0 }})
                       </p>
                       <p class="pl-[56px]">
-                        Longitudinal Cracks ({{ prov.n_cracks.longi || 0 }})
+                        Longitudinal Cracks ({{ info.n_cracks.longi || 0 }})
                       </p>
                       <p class="pl-[56px]">
-                        Multiple Cracks ({{ prov.n_cracks.multi || 0 }})
+                        Multiple Cracks ({{ info.n_cracks.multi || 0 }})
                       </p>
                     </span>
                   </div>
@@ -115,19 +129,23 @@
                       <img src="/img/total-crack.png" alt="" />
                       <p class="font-bold">Total Number of Cracks:</p>
                     </span>
-                    <p class="pl-[56px]">{{ prov.n_cracks.longi + prov.n_cracks.trans + prov.n_cracks.multi || 0 }} cracks</p>
+                    <p class="pl-[56px]">
+                      {{ info.n_cracks.longi + info.n_cracks.trans +
+                      info.n_cracks.multi || 0 }} cracks
+                    </p>
                   </div>
                   <div class="detailed-info">
                     <span class="flex gap-[15px] items-center">
                       <img src="/img/date.png" alt="" />
                       <p class="font-bold">Date Last Updated:</p>
                     </span>
-                    <p class="pl-[56px]">{{ prov.date || "Unknown" }}</p>
+                    <p class="pl-[56px]">{{ info.date || "Unknown" }}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
 
           <div class="map__gis flex flex-col h-dvh pt-[114px]">
             <h2 class="px-6 text-light py-1 bg-primary">GIS System</h2>
@@ -136,11 +154,11 @@
         </div>
       </div>
     </div>
-    <div class="crack">
-      <div class="container relative">
+    <div class="crack absolute top-[114px] z-50 -translate-x-full duration-900 ease-in-out" id="crack">
+      <div class="container">
         <div
-          class="crack__wrapper absolute bottom-[114px] z-50 left-[-100%] duration-900 ease-in-out"
-          id="crack"
+          class="crack__wrapper "
+          
         >
           <div
             class="flex gap-10 bg-dark px-[25px] text-light py-1 h-[46.7px] items-center"
@@ -152,22 +170,19 @@
             <img src="/img/pin-loc.png" alt="" />
             <p>Cavite State University</p>
           </span>
-          <div id="crack-details" class="min-h-[602px] bg-light"></div>
+          <div id="crack-details" class="min-h-[602px] bg-light">
+            
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="dropdown bg-light">
-      <div class="dropdown__wrapper">
-        <h2>hi</h2>
-      </div>
-    </div>
+
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="app.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
     <script src="marker.js"></script>
-
   </body>
 </html>

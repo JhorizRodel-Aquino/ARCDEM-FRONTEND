@@ -5,7 +5,7 @@ async function fetchGroup(param, relation = "") {
   try {
     let link = `${url}/group/${param}`;
 
-    if (relation === ""){
+    if (relation === "") {
       link = `${url}/group/${param}`;
     } else {
       link = `${url}/group/${param}/${relation}`;
@@ -81,7 +81,6 @@ const app = Vue.createApp({
       console.log("Fetched info:", this.info); // Debugging: Log the info object
 
       this.assessment = await fetchGroup(id, "assessments");
-
 
       // Expand the clicked item
       this.expandedIndex = index;
