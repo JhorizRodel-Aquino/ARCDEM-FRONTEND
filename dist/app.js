@@ -1,42 +1,7 @@
-const url = "https://legal-sites-pick.loca.lt";
+const url = "http://192.168.68.116:5000";
 
 // FUNCTION FOR PROVINCES
-async function fetchGroup(param, relation = "") {
-  try {
-    let link = `${url}/group/${param}`;
 
-    if (relation === ""){
-      link = `${url}/group/${param}`;
-    } else {
-      link = `${url}/group/${param}/${relation}`;
-    }
-    // if (typeof param === "string") {
-    //   link = `${url}/group/${param}`;
-    // } else if (typeof param === "number") {
-    //   link = `${url}/group/${param}`;
-    // } else {
-    //   throw new Error("Invalid parameter type. Expected string or number.");
-    // }
-
-    const response = await fetch(link, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("Fetched group:", data);
-    return data;
-  } catch (error) {
-    console.error("Error fetching group:", error);
-    return [];
-  }
-}
 
 const app = Vue.createApp({
   data() {

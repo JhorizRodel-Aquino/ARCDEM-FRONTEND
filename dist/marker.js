@@ -1,4 +1,4 @@
-let assessment = {
+let markerData = {
   Indang: [
     {
       coords: [14.199637, 120.882066],
@@ -162,6 +162,6 @@ map.on("click", () => {
 });
 
 // Add markers to the map
-addMarkers(assessment);
+addMarkers(markerData);
 
 

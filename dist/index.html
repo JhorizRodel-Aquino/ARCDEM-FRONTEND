@@ -11,97 +11,70 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+    />
   </head>
-  <body class="bg-gray-200">
-    <nav class="header border-b-[8px] border-gray-200 bg-light">
+  <body class="bg-gray-200 relative">
+    <header
+      class="header border-b-[8px] border-gray-200 bg-light absolute top-0 left-[50%] translate-x-[-50%] z-20 w-full"
+    >
       <div class="container">
         <div
-          class="header__wrapper  h-[106px] flex justify-between items-center px-[56px] "
-        >
+          class="header__wrapper h-[106px] flex justify-between items-center px-[56px]">
           <div class="flex gap-[40px] items-center">
             <h1 class="text-primary">ARCDEM</h1>
             <h3>Automated Road Crack Detection and Mapping System</h3>
           </div>
           <div class="flex justify-between">
-            <!-- <img src="/img/add-icon.png" alt="" /> -->
-            <div
-              class="flex px-[21px] py-[11px] bg-primary rounded-[25px] items-center gap-[14.72px]"
-            >
-              <p>Search Location</p>
-              <img src="/img/search-loc.png" alt="" />
-            </div>
+            <img src="/img/add-icon.png" alt="" />
           </div>
         </div>
       </div>
-    </nav>
-    <div class="mapping relative h-full">
+    </header>
+    <div class="mapping relative">
       <div class="container">
-        <div class="mapping__wrapper grid grid-flow-col grid-cols-[30%_70%] bg-light">
-          <div class="map__location grid border-r-[8px] border-gray-200">
-            <h2 class="bg-dark allindent text-light py-1">Location</h2>
-            <span class="bg-primary flex gap-1 items-center py-4 allindent">
-              <img src="/img/pin-loc.png" alt="" />
-              <p>Cavite State University</p>
-            </span>
-            <p class="font-bold detailed-info">Detailed Information</p>
-            <div class="detailed-info">
-              <span class="flex gap-[15px] items-center">
-                <img src="/img/length.png" alt="" />
-                <p class="font-bold">Length of Road Monitored:</p>
-              </span>
-              <p class="pl-[56px]">900 meters</p>
+        <div class="mapping__wrapper grid grid-flow-col grid-cols-[35%_65%] bg-light">
+          <div class="map__location flex flex-col border-r-[8px] border-gray-200 h-dvh relative pt-[114px]">
+            <div class="bg-dark flex justify-between px-6 py-1 items-center sticky top-0">
+              <div class="">
+                <h2 class="text-light">Location</h2>
+              </div>
+              <div class="flex px-[15px] bg-light rounded-[15px] items-center gap-[2px] py-[2px]">
+                <input type="text" class="bg-light outline-none w-[140px]" />
+                <span class="flex items-center gap-3">
+                  <a href=""><img class="w-2" src="/img/X.png" alt="" /></a>
+                  <h6 class="text-dark opacity-30">|</h6>
+                  <a href=""><img class="w-4" src="/img/search-loc.png" alt=""/></a>
+                </span>
+              </div>
             </div>
-            <div class="detailed-info">
-              <span class="flex gap-[15px] items-center">
-                <img src="/img/lanes.png" alt="" />
-                <p class="font-bold">Number of Lanes:</p>
-              </span>
-              <p class="pl-[56px]">2 lanes</p>
+            <div class="sort__by bg-light text-dark px-6 py-3 border-y-2">
+              <label for="sort__loc">Sort locations by: </label>
+              <select name="sort__loc" id="sortGroup" class="text-dark" onchange="groupSorting()">
+                <option value="region" selected>Region</option>
+                <option value="city">City</option>
+                <option value="province">Province</option>
+              </select>
             </div>
-            <div class="detailed-info">
-              <span class="flex gap-[15px] items-center">
-                <img src="/img/cracks-detected.png" alt="" />
-                <p class="font-bold">Types of Cracks Detected:</p>
-              </span>
-              <span class="grid gap-2">
-                <p class="pl-[56px]">Transverse Cracks (12)</p>
-                <p class="pl-[56px]">Longitudinal Cracks (5)</p>
-                <p class="pl-[56px]">Multiple Cracks (7)</p>
-              </span>
-            </div>
-            <div class="detailed-info">
-              <span class="flex gap-[15px] items-center">
-                <img src="/img/total-crack.png" alt="" />
-                <p class="font-bold">Total Number of Cracks:</p>
-              </span>
-              <p class="pl-[56px]">24 cracks</p>
-            </div>
-            <span class="bg-primary flex gap-1 items-center py-4 allindent">
-              <img src="/img/pin-loc.png" alt="" />
-              <p>Other Locations</p>
-            </span>
-            <div class="detailed-info">
-              <span class="flex gap-[15px] items-center">
-                <img src="/img/length.png" alt="" />
-                <p class="font-bold">Carmona Public Market:</p>
-              </span>
-              <p class="pl-[56px]">Carmona, Cavite</p>
+            <div id="groupNames" class="groupNames items-start overflow-y-scroll">
+  
             </div>
           </div>
-          <div class="map__gis flex flex-col">
+
+          <div class="map__gis flex flex-col h-dvh pt-[114px]">
             <h2 class="px-6 text-light py-1 bg-primary">GIS System</h2>
             <div id="map" class="w-full h-full z-10"></div>
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-            <script src="marker.js"></script>
           </div>
         </div>
       </div>
     </div>
-    <div class="crack hidden">
-      <div class="container relative">
+    <!-- <div class="crack absolute top-[114px] z-50 -translate-x-full duration-900 ease-in-out" id="crack">
+      <div class="container">
         <div
-          class="crack__wrapper absolute bottom-0 z-10 left-[-100%] duration-900 ease-in-out"
-          id="crack"
+          class="crack__wrapper "
+          
         >
           <div
             class="flex gap-10 bg-dark px-[25px] text-light py-1 h-[46.7px] items-center"
@@ -114,17 +87,16 @@
             <p>Cavite State University</p>
           </span>
           <div id="crack-details" class="min-h-[602px] bg-light">
-            <!-- <div class="crack-info grid gap-2">
-              <h3 class="font-bold">Crack 2:</h3>
-              <p><span class="font-bold">Type: </span>Longitudinal</p>
-              <p><span class="font-bold">Severity: </span>N</p>
-              <p>
-                <span class="font-bold">Recommended Solution: </span
-                >Grooving/Sealing
-              </p> -->
+            
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="index.js"></script>
+
+    <!-- <script src="marker.js"></script> -->
   </body>
 </html>

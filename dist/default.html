@@ -87,12 +87,12 @@
                 </span>
 
                 <!-- Details Section -->
-                <div class="summary__detailed" v-if="expandedIndex === index && info" v-for="(assess, index) in assessment.assessments">
+                <div class="summary__detailed" v-if="expandedIndex === index && info" >
                   <p class="font-bold detailed-info" >Detailed Information</p>
                   <div class="detailed-info">
                     <span class="flex gap-[15px] items-center">
                       <img src="/img/length.png" alt="" />
-                      <p class="font-bold">Length of Road Monitored: {{ assess.id }}</p>
+                      <p class="font-bold">Length of Road Monitored:</p>
                     </span>
                     <p class="pl-[56px]">
                       {{ info.n_assess * 5 || "N/A" }} meters
@@ -154,7 +154,7 @@
         </div>
       </div>
     </div>
-    <div class="crack absolute top-[114px] z-50 -translate-x-full duration-900 ease-in-out" id="crack">
+    <!-- <div class="crack absolute top-[114px] z-50 -translate-x-full duration-900 ease-in-out" id="crack">
       <div class="container">
         <div
           class="crack__wrapper "
@@ -175,7 +175,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>

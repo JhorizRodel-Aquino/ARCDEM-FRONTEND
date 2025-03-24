@@ -49,7 +49,11 @@
     width: 1000px;
   }
 
-  [v-cloak] {
-    display: none;
-}
+  .summaryDetailed {
+    @apply h-auto max-h-0 overflow-hidden duration-500 ease-in;
+  }
+
+  .summaryDetailed.open {
+    @apply max-h-[50rem]; /* Adjust max-height based on content size */
+  }
 }
