@@ -16,14 +16,14 @@
       href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
     />
   </head>
-  <body class="bg-gray-200 relative">
+  <body class="bg-[#F5F5F5] relative">
     <header
-      class="header border-b-[8px] border-gray-200 bg-light absolute top-0 left-[50%] translate-x-[-50%] z-20 w-full"
+      class="header "
     >
-      <div class="container">
+      <div class="container border-b-[8px] border-gray-200 bg-light absolute top-0 left-[50%] translate-x-[-50%] z-20">
         <div
-          class="header__wrapper h-[106px] flex justify-between items-center px-[56px]">
-          <div class="flex gap-[40px] items-center">
+          class="header__wrapper h-[106px] flex justify-between items-center px-[56px] w-full">
+          <div class="flex gap-[40px] items-center justify-between">
             <h1 class="text-primary">ARCDEM</h1>
             <h3>Automated Road Crack Detection and Mapping System</h3>
           </div>
@@ -33,7 +33,7 @@
         </div>
       </div>
     </header>
-    <div class="mapping relative">
+    <section class="mapping relative">
       <div class="container">
         <div class="mapping__wrapper grid grid-flow-col grid-cols-[35%_65%] bg-light">
           <div class="map__location flex flex-col border-r-[8px] border-gray-200 h-dvh relative pt-[114px]">
@@ -58,7 +58,7 @@
                 <option value="province">Province</option>
               </select>
             </div>
-            <div id="groupNames" class="groupNames items-start overflow-y-scroll">
+            <div id="groupNames" class="groupNames items-start h-screen overflow-y-scroll">
   
             </div>
           </div>
@@ -69,8 +69,8 @@
           </div>
         </div>
       </div>
-    </div>
-    <!-- <div class="crack absolute top-[114px] z-50 -translate-x-full duration-900 ease-in-out" id="crack">
+    </section>
+    <section class="crack fixed bg-light flex top-[114px] h-full z-50 -translate-x-full duration-900 ease-in-out" id="crack">
       <div class="container">
         <div
           class="crack__wrapper "
@@ -79,19 +79,19 @@
           <div
             class="flex gap-10 bg-dark px-[25px] text-light py-1 h-[46.7px] items-center"
           >
-            <p>Coordinates: 38.8951° N, -77.0364° W</p>
+            <p id="coordinates">Coordinates: 38.8951° N, -77.0364° W</p>
             <p>Road Assessed: 5m</p>
           </div>
           <span class="bg-primary flex gap-1 items-center py-4 allindent">
             <img src="/img/pin-loc.png" alt="" />
-            <p>Cavite State University</p>
+            <p id="group">Cavite State University</p>
           </span>
-          <div id="crack-details" class="min-h-[602px] bg-light">
+          <div id="crack-details" class=" ">
             
           </div>
         </div>
       </div>
-    </div> -->
+    </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>

@@ -660,8 +660,20 @@ a{
   }
 }
 
+.\!visible{
+  visibility: visible !important;
+}
+
+.visible{
+  visibility: visible;
+}
+
 .collapse{
   visibility: collapse;
+}
+
+.fixed{
+  position: fixed;
 }
 
 .absolute{
@@ -708,6 +720,10 @@ a{
   display: grid;
 }
 
+.h-96{
+  height: 24rem;
+}
+
 .h-\[106px\]{
   height: 106px;
 }
@@ -722,6 +738,10 @@ a{
 
 .h-full{
   height: 100%;
+}
+
+.h-screen{
+  height: 100vh;
 }
 
 .min-h-\[602px\]{
@@ -839,6 +859,11 @@ a{
 .border-gray-200{
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity));
+}
+
+.bg-\[\#F5F5F5\]{
+  --tw-bg-opacity: 1;
+  background-color: rgb(245 245 245 / var(--tw-bg-opacity));
 }
 
 .bg-dark{
