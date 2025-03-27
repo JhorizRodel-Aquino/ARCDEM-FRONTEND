@@ -1,9 +1,14 @@
-const url = "http://192.168.68.116:5000";
+// const url = "http://192.168.68.116:5000";
+const url = "http://127.0.0.1:5000";
+// const url = "https://roadtrack-test.onrender.com";
 let selectedGroup = document.getElementById("sortGroup").value;
 let openedId = 0;
+let openedMark = 0;
 let map = L.map("map").setView([14.205, 120.885], 17);
 let currentPopup = null; // Track the currently open popup
 let firstPopupOpened = false; // Ensure only the first marker opens a popup
+let displayAssessState = false;
+let markerArr = [];
 
 const yellowIcon = new L.Icon({
   iconUrl:
@@ -159,7 +164,17 @@ const fetchCracks = async (assessID) => {
   }
 };
 
-const displayGroupLevel = async (param) => {
+const groupSorting = (groupID, selected = "") => {
+  if (!selected) {
+    selectedGroup = document.getElementById("sortGroup").value;
+    displayGroupLevel(selectedGroup);
+    return;
+  }
+  selectedGroup = selected;
+  displayGroupLevel(selectedGroup, groupID);
+};
+
+const displayGroupLevel = async (param, groupID = 0) => {
   let groupNames = document.getElementById("groupNames");
 
   let groupLevels = await fetchGroup(param);
@@ -179,15 +194,11 @@ const displayGroupLevel = async (param) => {
     const assess = await fetchGroup(groupLevel.id, "assessments");
     const key = `groupAss-${groupLevel.id}`;
     assessGroup[key] = assess.assessments;
-    addMarker(assessGroup[key]);
+    addMarker(assessGroup[key], groupLevel.id);
   }
 
-  displayGroupDetails(groupLevels[0].id);
-};
-
-const groupSorting = () => {
-  selectedGroup = document.getElementById("sortGroup").value;
-  displayGroupLevel(selectedGroup);
+  if (!groupID) displayGroupDetails(groupLevels[0].id);
+  else displayGroupDetails(groupID);
 };
 
 const displayGroupDetails = async (ID) => {
@@ -196,6 +207,7 @@ const displayGroupDetails = async (ID) => {
 
   if (openedId !== ID) {
     let openedGroup = document.getElementById(`details-${openedId}`);
+    displayAssessState = false;
 
     if (openedGroup) {
       openedGroup.remove();
@@ -210,6 +222,7 @@ const displayGroupDetails = async (ID) => {
     removeMarker(assessGroup[key]);
 
     assessGroup[key] = assess.assessments;
+    console.log("kinli", assess.assessments);
     addMarker(assessGroup[key], ID, "yellow");
 
     const coords = [];
@@ -219,67 +232,75 @@ const displayGroupDetails = async (ID) => {
 
     groupNames.innerHTML += `
             <div class="summaryDetailed" id="details-${ID}">
+              <div class="mb-5">
                 <p class="font-bold detailed-info">Detailed Information</p>
-                <div class="detailed-info">
+                <div>
+                  <div class="detailed-info">
                     <span class="flex gap-[15px] items-center">
                     <img src="/img/length.png" alt="" />
                     <p class="font-bold">Length of Road Monitored:</p>
                     </span>
                     <p class="pl-[56px]">${details.n_assess * 5} meters</p>
+                  </div>
+                  <div class="detailed-info">
+                      <span class="flex gap-[15px] items-center">
+                      <img src="/img/lanes.png" alt="" />
+                      <p class="font-bold">Number of Assessments:</p>
+                      </span>
+                      <p class="pl-[56px]">${details.n_assess} assessments</p>
+                  </div>
+                  <div class="detailed-info">
+                      <span class="flex gap-[15px] items-center">
+                      <img src="/img/cracks-detected.png" alt="" />
+                      <p class="font-bold">Types of Cracks Detected:</p>
+                      </span>
+                      <span class="grid gap-2">
+                      <p class="pl-[56px]">Transverse Cracks (${
+                        details.n_cracks.trans
+                      })</p>
+                      <p class="pl-[56px]">Longitudinal Cracks (${
+                        details.n_cracks.longi
+                      })</p>
+                      <p class="pl-[56px]">Multiple Cracks (${
+                        details.n_cracks.multi
+                      })</p>
+                      </span>
+                  </div>
+                  <div class="detailed-info">
+                      <span class="flex gap-[15px] items-center">
+                      <img src="/img/total-crack.png" alt="" />
+                      <p class="font-bold">Total Number of Cracks:</p>
+                      </span>
+                      <p class="pl-[56px]">${
+                        details.n_cracks.trans +
+                        details.n_cracks.longi +
+                        details.n_cracks.multi
+                      }  cracks</p>
+                  </div>
+                  <div class="detailed-info">
+                      <span class="flex gap-[15px] items-center">
+                      <img src="/img/date.png" alt="" />
+                      <p class="font-bold">Date Last Updated:</p>
+                      </span>
+                      <p class="pl-[56px]">${details.date}</p>
+                  </div>
                 </div>
-                <div class="detailed-info">
-                    <span class="flex gap-[15px] items-center">
-                    <img src="/img/lanes.png" alt="" />
-                    <p class="font-bold">Number of Assessments:</p>
-                    </span>
-                    <p class="pl-[56px]">${details.n_assess} assessments</p>
                 </div>
-                <div class="detailed-info">
-                    <span class="flex gap-[15px] items-center">
-                    <img src="/img/cracks-detected.png" alt="" />
-                    <p class="font-bold">Types of Cracks Detected:</p>
-                    </span>
-                    <span class="grid gap-2">
-                    <p class="pl-[56px]">Transverse Cracks (${
-                      details.n_cracks.trans
-                    })</p>
-                    <p class="pl-[56px]">Longitudinal Cracks (${
-                      details.n_cracks.longi
-                    })</p>
-                    <p class="pl-[56px]">Multiple Cracks (${
-                      details.n_cracks.multi
-                    })</p>
-                    </span>
-                </div>
-                <div class="detailed-info">
-                    <span class="flex gap-[15px] items-center">
-                    <img src="/img/total-crack.png" alt="" />
-                    <p class="font-bold">Total Number of Cracks:</p>
-                    </span>
-                    <p class="pl-[56px]">${
-                      details.n_cracks.trans +
-                      details.n_cracks.longi +
-                      details.n_cracks.multi
-                    }  cracks</p>
-                </div>
-                <div class="detailed-info">
-                    <span class="flex gap-[15px] items-center">
-                    <img src="/img/date.png" alt="" />
-                    <p class="font-bold">Date Last Updated:</p>
-                    </span>
-                    <p class="pl-[56px]">${details.date}</p>
-                </div>
+              <div>
+                <p class="font-bold detailed-info" onclick="displayGroupAssessments(${ID})">Assessments</p>
+                <div id="displayAssess-${ID}"></div>
+              </div>
             </div>`;
 
     let expanded = document.getElementById(`toggle-${ID}`);
     let sumDetails = document.getElementById(`details-${ID}`);
-    sumDetails.classList.add("open");
 
     expanded.addEventListener("click", () => {
       sumDetails.classList.toggle("open");
     });
 
     zoomToPoints(coords);
+    sumDetails.classList.add("open");
   } else {
     let track = document.getElementById(`details-${ID}`);
 
@@ -302,52 +323,52 @@ const displayGroupDetails = async (ID) => {
   }
 };
 
-// // Function to dynamically add markers and bind click events
-// const addMarkers = async (ID) => {
-//   let markers = []; // Array to store marker objects
-//   let pins = await fetchGroup(ID, "assessments");
+const displayGroupAssessments = async (ID) => {
+  displayAssessState = !displayAssessState;
+  const displayAssessElement = document.getElementById(`displayAssess-${ID}`);
 
-//   // Iterate through all cities
+  if (displayAssessState) {
+    displayAssessElement.innerHTML = "";
 
-//   pins.assessments.forEach((coordinates) => {
-//     // Create marker for each set of coordinates
-//     let marker = L.marker(coordinates.start_coor).addTo(map);
-//     markers.push(marker);
+    const key = `groupAss-${ID}`;
+    let index = 0;
+    assessGroup[key].forEach((assess) => {
+      index++;
+      displayAssessElement.innerHTML += `
+      <div class="detailed-info" onclick="displayAssessCracks(${index-1})">
+        <span class="flex gap-[15px] items-center">
+        <img src="/img/length.png" alt="" />
+        <p>Assessment ${index}</p>
+        </span>
+      </div>
+    `;
+    });
+    return;
+  }
+  displayAssessElement.innerHTML = "";
+};
 
-//     // Add click event to update the info panel
-//     marker.on("click", (e) => {
-//       e.originalEvent.stopPropagation(); // Prevent map click event from firing
-//       displayMultipleCracks(coordinates.cracks); // Handle multiple cracks
-//       document.getElementById("crack").classList.remove("-translate-x-full");
-//       document.getElementById("crack").style.left = "0";
-//     });
-//   });
-
-//   // Adjust map view to include all markers
-//   let markerBounds = L.latLngBounds(
-//     markers.map((marker) => marker.getLatLng())
-//   );
-//   map.fitBounds(markerBounds); // Fit the map to the bounds of all markers
-// };
+const displayAssessCracks = async (index) => {
+  markerArr[index].fire("click");
+};
 
 const addMarker = async (coords, groupID, color = "") => {
   const infoPanel = document.querySelector("#crack-details");
-
-  let assessIndex = 0
+  let markers = [];
+  let assessIndex = 0;
   coords.forEach((coor) => {
-    assessIndex++
+    assessIndex++;
     const coors = coor.start_coor;
     let marker;
     if (color) marker = L.marker(coors, { icon: yellowIcon }).addTo(map);
     // Opens popup by default;
     else marker = L.marker(coors).addTo(map); // Opens popup by default;
-
+    
     // Bind popup once, but don't open it yet
     marker.bindPopup(`Assessment ${assessIndex}`, { closeButton: false });
 
     // Click event for opening the popup and showing crack details
-    marker.on("click", async (e) => {
-      e.originalEvent.stopPropagation();
+    marker.on("click", async () => {
 
       if (currentPopup) {
         map.closePopup(currentPopup); // Close previous popup
@@ -356,32 +377,48 @@ const addMarker = async (coords, groupID, color = "") => {
       marker.openPopup(); // Open new popup
       currentPopup = marker.getPopup(); // Store the opened popup
 
-      // Fetch and display crack details
-      let grpNameElement = document.getElementById(`grpname-${groupID}`);
-      let grpName = grpNameElement ? grpNameElement.innerHTML : "Unknown Group";
+      if (openedMark != coor.id) {
+        openedMark = coor.id;
 
-      let lat = coors[0] < 0 ? "S" : "N";
-      let lon = coors[1] < 0 ? "E" : "W";
+        // Fetch and display crack details
+        let lat = coors[0] < 0 ? "S" : "N";
+        let lon = coors[1] < 0 ? "E" : "W";
 
-      document.getElementById(
-        "coordinates"
-      ).innerHTML = `${coors[0]} ${lat}, ${coors[1]} ${lon}`;
-      document.getElementById("group").innerHTML = grpName;
+        document.getElementById(
+          "coordinates"
+        ).innerHTML = `${coors[0]} ${lat}, ${coors[1]} ${lon}`;
 
-      let crackDetails = await fetchCracks(coor.id);
-      let index = 0;
-      infoPanel.innerHTML = ""; // Clear existing content
+        let grpNameElement = document.getElementById(`grpname-${groupID}`);
+        let grpName = grpNameElement
+          ? grpNameElement.innerHTML
+          : "Unknown Group";
+        document.getElementById("group").innerHTML = grpName;
 
-      crackDetails.cracks.forEach((crack) => {
-        index++;
+        const ancestors = await fetchGroup(groupID, "ancestors");
+        console.log(ancestors);
+        document.getElementById("address").innerHTML = "";
+        let i = ancestors.length;
+        ancestors.forEach((ancestor) => {
+          i--;
+          document.getElementById(
+            "address"
+          ).innerHTML += `<a onclick="goBack(${ancestor.id}, ${i})"><small>, ${ancestor.name}</small></a>`;
+        });
 
-        let sol =
-          crack.crack_type === "longitudinal" ||
-          crack.crack_type === "transverse"
-            ? "Asphalt"
-            : "Reblock";
+        let crackDetails = await fetchCracks(coor.id);
+        let index = 0;
+        infoPanel.innerHTML = ""; // Clear existing content
 
-        infoPanel.innerHTML += `
+        crackDetails.cracks.forEach((crack) => {
+          index++;
+
+          let sol =
+            crack.crack_type === "longitudinal" ||
+            crack.crack_type === "transverse"
+              ? "Asphalt"
+              : "Reblock";
+
+          infoPanel.innerHTML += `
           <div class="crack-info grid gap-2">
             <h3 class="font-bold">Crack ${index}:</h3>
             <p><span class="font-bold">Type: </span>${crack.crack_type}</p>
@@ -389,10 +426,11 @@ const addMarker = async (coords, groupID, color = "") => {
             <p><span class="font-bold">Recommended Solution: </span>${sol}</p>
           </div>
         `;
-      });
+        });
 
-      document.getElementById("crack").classList.remove("-translate-x-full");
-      document.getElementById("crack").style.left = "0";
+        document.getElementById("crack").classList.remove("-translate-x-full");
+        document.getElementById("crack").style.left = "0";
+      }
     });
 
     // Ensure only the first marker in the **entire session** opens its popup
@@ -401,8 +439,13 @@ const addMarker = async (coords, groupID, color = "") => {
       currentPopup = marker.getPopup();
       firstPopupOpened = true;
     }
+
+    markers.push(marker);
   });
+  console.log("kineee", markers)
+  markerArr = markers;
 };
+
 const removeMarker = (coords) => {
   coords.forEach((coor) => {
     const [lat, lng] = coor.start_coor; // Extract lat & lng from array
@@ -418,33 +461,26 @@ const removeMarker = (coords) => {
   });
 };
 
-// Function to zoom to bounds covering all coordinates
 function zoomToPoints(coords) {
   const bounds = L.latLngBounds(coords);
   map.fitBounds(bounds, { padding: [50, 50] });
 }
 
-// Function to handle multiple cracks
-function displayMultipleCracks(cracks) {
-  const infoPanel = document.querySelector("#crack-details");
-  infoPanel.innerHTML = ""; // Clear existing content
+const goBack = (ID, index) => {
+  document.getElementById("crack").style.left = "-100%";
+  openedMark = 0;
 
-  cracks.forEach((crack, index) => {
-    infoPanel.innerHTML += `
-      <div class="crack-info grid gap-2">
-        <h3 class="font-bold">Crack ${index + 1}:</h3>
-        <p><span class="font-bold">Type: </span>${crack.type}</p>
-        <p><span class="font-bold">Severity: </span>${crack.severity}</p>
-        <p><span class="font-bold">Recommended Solution: </span>${
-          crack.recommendedSolution
-        }</p>
-      </div>
-    `;
-  });
-}
+  let option;
+  if (index == 0) option = "region";
+  else if (index == 1) option = "province";
+  else if (index == 2) option = "city";
+  groupSorting(ID, option);
+  document.getElementById("sortGroup").value = option;
+};
 
 map.on("click", () => {
   document.getElementById("crack").style.left = "-100%";
+  openedMark = 0;
 });
 
 // Add markers to the map

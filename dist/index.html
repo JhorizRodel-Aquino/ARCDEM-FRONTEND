@@ -17,12 +17,13 @@
     />
   </head>
   <body class="bg-[#F5F5F5] relative">
-    <header
-      class="header "
-    >
-      <div class="container border-b-[8px] border-gray-200 bg-light absolute top-0 left-[50%] translate-x-[-50%] z-20">
+    <header class="header">
+      <div
+        class="container border-b-[8px] border-gray-200 bg-light absolute top-0 left-[50%] translate-x-[-50%] z-20"
+      >
         <div
-          class="header__wrapper h-[106px] flex justify-between items-center px-[56px] w-full">
+          class="header__wrapper h-[106px] flex justify-between items-center px-[56px] w-full"
+        >
           <div class="flex gap-[40px] items-center justify-between">
             <h1 class="text-primary">ARCDEM</h1>
             <h3>Automated Road Crack Detection and Mapping System</h3>
@@ -35,32 +36,48 @@
     </header>
     <section class="mapping relative">
       <div class="container">
-        <div class="mapping__wrapper grid grid-flow-col grid-cols-[35%_65%] bg-light">
-          <div class="map__location flex flex-col border-r-[8px] border-gray-200 h-dvh relative pt-[114px]">
-            <div class="bg-dark flex justify-between px-6 py-1 items-center sticky top-0">
+        <div
+          class="mapping__wrapper grid grid-flow-col grid-cols-[35%_65%] bg-light"
+        >
+          <div
+            class="map__location flex flex-col border-r-[8px] border-gray-200 h-dvh relative pt-[114px]"
+          >
+            <div
+              class="bg-dark flex justify-between px-6 py-1 items-center sticky top-0"
+            >
               <div class="">
                 <h2 class="text-light">Location</h2>
               </div>
-              <div class="flex px-[15px] bg-light rounded-[15px] items-center gap-[2px] py-[2px]">
+              <div
+                class="flex px-[15px] bg-light rounded-[15px] items-center gap-[2px] py-[2px]"
+              >
                 <input type="text" class="bg-light outline-none w-[140px]" />
                 <span class="flex items-center gap-3">
                   <a href=""><img class="w-2" src="/img/X.png" alt="" /></a>
                   <h6 class="text-dark opacity-30">|</h6>
-                  <a href=""><img class="w-4" src="/img/search-loc.png" alt=""/></a>
+                  <a href=""
+                    ><img class="w-4" src="/img/search-loc.png" alt=""
+                  /></a>
                 </span>
               </div>
             </div>
             <div class="sort__by bg-light text-dark px-6 py-3 border-y-2">
               <label for="sort__loc">Sort locations by: </label>
-              <select name="sort__loc" id="sortGroup" class="text-dark" onchange="groupSorting()">
-                <option value="region" selected>Region</option>
-                <option value="city">City</option>
+              <select
+                name="sort__loc"
+                id="sortGroup"
+                class="text-dark"
+                onchange="groupSorting()"
+              >
+                <option value="region">Region</option>
+                <option value="city" selected>City</option>
                 <option value="province">Province</option>
               </select>
             </div>
-            <div id="groupNames" class="groupNames items-start h-screen overflow-y-scroll">
-  
-            </div>
+            <div
+              id="groupNames"
+              class="groupNames items-start h-screen overflow-y-scroll"
+            ></div>
           </div>
 
           <div class="map__gis flex flex-col h-dvh pt-[114px]">
@@ -70,12 +87,12 @@
         </div>
       </div>
     </section>
-    <section class="crack fixed bg-light flex top-[114px] h-full z-50 -translate-x-full duration-900 ease-in-out" id="crack">
+    <section
+      class="crack fixed bg-light flex top-[114px] h-full z-50 -translate-x-full duration-900 ease-in-out"
+      id="crack"
+    >
       <div class="container">
-        <div
-          class="crack__wrapper "
-          
-        >
+        <div class="crack__wrapper">
           <div
             class="flex gap-10 bg-dark px-[25px] text-light py-1 h-[46.7px] items-center"
           >
@@ -84,11 +101,12 @@
           </div>
           <span class="bg-primary flex gap-1 items-center py-4 allindent">
             <img src="/img/pin-loc.png" alt="" />
-            <p id="group">Cavite State University</p>
+            <span class="flex">
+              <p id="group"></p>
+              <span id="address"></span>
+            </span>
           </span>
-          <div id="crack-details" class=" ">
-            
-          </div>
+          <div id="crack-details" class=" "></div>
         </div>
       </div>
     </section>

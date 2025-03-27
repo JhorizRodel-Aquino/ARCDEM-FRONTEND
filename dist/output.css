@@ -522,7 +522,7 @@ a{
 }
 
 .summaryDetailed.open{
-  max-height: 50rem;
+  max-height: 250rem;
   /* Adjust max-height based on content size */
 }
 
@@ -660,14 +660,6 @@ a{
   }
 }
 
-.\!visible{
-  visibility: visible !important;
-}
-
-.visible{
-  visibility: visible;
-}
-
 .collapse{
   visibility: collapse;
 }
@@ -712,8 +704,20 @@ a{
   z-index: 50;
 }
 
+.mb-5{
+  margin-bottom: 1.25rem;
+}
+
 .flex{
   display: flex;
+}
+
+.table{
+  display: table;
+}
+
+.\!table{
+  display: table !important;
 }
 
 .grid{
@@ -836,6 +840,10 @@ a{
 
 .rounded-\[15px\]{
   border-radius: 15px;
+}
+
+.border{
+  border-width: 1px;
 }
 
 .border-y-2{

@@ -1,13 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <link href="./output.css" rel="stylesheet" />
+  </head>
+  <body>
+    <button onclick="downloadTableAsPDF('crack-details', 'CrackDetails.pdf')">
+      Download as PDF
+    </button>
 
-</head>
-<body>
-    <div class="h-96 bg-dark "></div>
-</body>
+    <div id="crack-details">
+      <h2>Crack Assessment Report</h2>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Crack Type</th>
+            <th>Severity</th>
+            <th>Recommended Solution</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Longitudinal</td>
+            <td>High</td>
+            <td>Asphalt Filling</td>
+          </tr>
+          <tr>
+            <td>Transverse</td>
+            <td>Medium</td>
+            <td>Asphalt Filling</td>
+          </tr>
+          <tr>
+            <td>Alligator</td>
+            <td>Severe</td>
+            <td>Reblock</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
+    <script>
+      const downloadTableAsPDF = (divId, filename = "table.pdf") => {
+        const element = document.getElementById(divId);
+        if (!element) {
+          console.error("Element not found:", divId);
+          return;
+        }
+
+        // Get the table inside the div
+        const table = element.querySelector("table");
+        if (!table) {
+          console.error("No table found inside the div:", divId);
+          return;
+        }
+
+        // Initialize jsPDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Convert HTML table to autoTable format
+        doc.autoTable({
+          html: table, // Automatically extracts the table
+          theme: "grid", // Adds grid lines for better visibility
+          styles: {
+            fontSize: 10,
+          },
+          headStyles: {
+            fillColor: [0, 102, 204], // Blue header background
+            textColor: [255, 255, 255], // White text
+            fontStyle: "bold",
+          },
+          margin: { top: 20 },
+        });
+
+        // Save the PDF
+        doc.save(filename);
+      };
+    </script>
+  </body>
 </html>

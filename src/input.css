@@ -54,6 +54,6 @@
   }
 
   .summaryDetailed.open {
-    @apply max-h-[50rem]; /* Adjust max-height based on content size */
+    @apply max-h-[250rem]; /* Adjust max-height based on content size */
   }
 }
