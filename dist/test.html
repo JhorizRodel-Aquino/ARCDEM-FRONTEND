@@ -1,85 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link href="./output.css" rel="stylesheet" />
-  </head>
-  <body>
-    <button onclick="downloadTableAsPDF('crack-details', 'CrackDetails.pdf')">
-      Download as PDF
-    </button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Crack Assessments</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 {
+            color: #333;
+        }
+        .info {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e8f0fe;
+            border-radius: 5px;
+        }
+        .assessment {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        .image-container {
+            margin-left: 20px;
+        }
+        img {
+            width: 200px;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
 
-    <div id="crack-details">
-      <h2>Crack Assessment Report</h2>
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Crack Type</th>
-            <th>Severity</th>
-            <th>Recommended Solution</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Longitudinal</td>
-            <td>High</td>
-            <td>Asphalt Filling</td>
-          </tr>
-          <tr>
-            <td>Transverse</td>
-            <td>Medium</td>
-            <td>Asphalt Filling</td>
-          </tr>
-          <tr>
-            <td>Alligator</td>
-            <td>Severe</td>
-            <td>Reblock</td>
-          </tr>
-        </tbody>
-      </table>
+<div class="container">
+    <h2>Region: Calabarzon</h2>
+    <div class="info">
+        <p><strong>Address:</strong> Calabarzon</p>
+        <p><strong>Total Assessments:</strong> 10</p>
+        <p><strong>Crack Types:</strong> Longitudinal (5), Multiple (5), Transverse (10)</p>
+        <p><strong>Latest Update:</strong> 2025-02-28 12:53:20</p>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
-    <script>
-      const downloadTableAsPDF = (divId, filename = "table.pdf") => {
-        const element = document.getElementById(divId);
-        if (!element) {
-          console.error("Element not found:", divId);
-          return;
-        }
+    <h3>Assessments</h3>
 
-        // Get the table inside the div
-        const table = element.querySelector("table");
-        if (!table) {
-          console.error("No table found inside the div:", divId);
-          return;
-        }
+    <div id="assessments-container">
+        <!-- Assessments will be inserted here dynamically -->
+    </div>
+</div>
 
-        // Initialize jsPDF
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+<script>
+    // Sample Data
+    const data = {
+        "address": "Calabarzon",
+        "assessments": [
+            {
+                "id": 3,
+                "date": "Fri, 28 Feb 2025 12:53:20 GMT",
+                "start_coor": [14.2984189, 121.0522294],
+                "end_coor": [14.2984189, 121.0522294],
+                "cracks": [
+                    {"crack_severity": "narrow", "crack_type": "longitudinal"},
+                    {"crack_severity": "wide", "crack_type": "transverse"}
+                ]
+            },
+            {
+                "id": 6,
+                "date": "Fri, 28 Feb 2025 12:53:20 GMT",
+                "start_coor": [14.3219259, 121.0621044],
+                "end_coor": [14.3219259, 121.0621044],
+                "cracks": [
+                    {"crack_severity": "narrow", "crack_type": "multiple"},
+                    {"crack_severity": "wide", "crack_type": "transverse"}
+                ]
+            }
+        ],
+        "date": "2025-02-28 12:53:20",
+        "n_assess": 10,
+        "n_cracks": {"longi": 5, "multi": 5, "trans": 10}
+    };
 
-        // Convert HTML table to autoTable format
-        doc.autoTable({
-          html: table, // Automatically extracts the table
-          theme: "grid", // Adds grid lines for better visibility
-          styles: {
-            fontSize: 10,
-          },
-          headStyles: {
-            fillColor: [0, 102, 204], // Blue header background
-            textColor: [255, 255, 255], // White text
-            fontStyle: "bold",
-          },
-          margin: { top: 20 },
+    // Function to generate assessments dynamically
+    function generateAssessments() {
+        const container = document.getElementById('assessments-container');
+
+        data.assessments.forEach((assessment, index) => {
+            const assessmentDiv = document.createElement('div');
+            assessmentDiv.classList.add('assessment');
+
+            const table = `
+                <table>
+                    <tr><th colspan="2">Assessment ID: ${assessment.id}</th></tr>
+                    <tr><td><strong>Date</strong></td><td>${assessment.date}</td></tr>
+                    <tr><td><strong>Start Coordinates</strong></td><td>${assessment.start_coor.join(', ')}</td></tr>
+                    <tr><td><strong>End Coordinates</strong></td><td>${assessment.end_coor.join(', ')}</td></tr>
+                    <tr><th colspan="2">Crack Details</th></tr>
+                    ${assessment.cracks.map(crack => 
+                        `<tr><td>${crack.crack_type}</td><td>${crack.crack_severity}</td></tr>`
+                    ).join('')}
+                </table>
+            `;
+
+            const imageDiv = `
+                <div class="image-container">
+                    <img src="images/assessment_${assessment.id}.png" alt="Assessment ${assessment.id}">
+                </div>
+            `;
+
+            assessmentDiv.innerHTML = table + imageDiv;
+            container.appendChild(assessmentDiv);
         });
+    }
 
-        // Save the PDF
-        doc.save(filename);
-      };
-    </script>
-  </body>
+    // Load assessments when page loads
+    window.onload = generateAssessments;
+</script>
+
+</body>
 </html>

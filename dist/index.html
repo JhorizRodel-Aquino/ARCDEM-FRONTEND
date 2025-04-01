@@ -61,7 +61,9 @@
                 </span>
               </div>
             </div>
-            <div class="sort__by bg-light text-dark px-6 py-3 border-y-2">
+            <div
+              class="sort__by bg-light text-dark px-6 py-3 border-y-2 relative"
+            >
               <label for="sort__loc">Sort locations by: </label>
               <select
                 name="sort__loc"
@@ -69,15 +71,17 @@
                 class="text-dark"
                 onchange="groupSorting()"
               >
-                <option value="region">Region</option>
-                <option value="city" selected>City</option>
+                <option value="region" selected>Region</option>
                 <option value="province">Province</option>
+                <option value="city">City</option>
               </select>
             </div>
-            <div
-              id="groupNames"
-              class="groupNames items-start h-screen overflow-y-scroll"
-            ></div>
+            <div id="subPopup" class="h-full overflow-y-hidden relative">
+              <div
+                id="groupNames"
+                class="groupNames z-30 items-start h-full overflow-y-scroll relative"
+              ></div>
+            </div>
           </div>
 
           <div class="map__gis flex flex-col h-dvh pt-[114px]">
@@ -88,7 +92,7 @@
       </div>
     </section>
     <section
-      class="crack fixed bg-light flex top-[114px] h-full z-50 -translate-x-full duration-900 ease-in-out"
+      class="crack fixed bg-light flex top-[114px] h-full z-50 -translate-x-full duration-900 ease-in-out w-[565px]"
       id="crack"
     >
       <div class="container">
@@ -99,14 +103,14 @@
             <p id="coordinates">Coordinates: 38.8951° N, -77.0364° W</p>
             <p>Road Assessed: 5m</p>
           </div>
-          <span class="bg-primary flex gap-1 items-center py-4 allindent">
-            <img src="/img/pin-loc.png" alt="" />
-            <span class="flex">
-              <p id="group"></p>
-              <span id="address"></span>
+          <span class="bg-primary pr-8 flex justify-between items-center">
+            <span class="flex gap-1 items-center py-4 allindent">
+              <img src="/img/pin-loc.png" alt="" />
+              <span id="address" class="flex"></span>
             </span>
+            <span id="AssessCloseBtn" class="text-4xl"></span>
           </span>
-          <div id="crack-details" class=" "></div>
+          <div id="crack-details" class="overflow-y-scroll h-dvh"></div>
         </div>
       </div>
     </section>

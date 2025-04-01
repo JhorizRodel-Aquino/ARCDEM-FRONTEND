@@ -1,10 +1,11 @@
 // const url = "http://192.168.68.116:5000";
 const url = "http://127.0.0.1:5000";
 // const url = "https://roadtrack-test.onrender.com";
-let selectedGroup = document.getElementById("sortGroup").value;
+
+let selectedGroup;
 let openedId = 0;
 let openedMark = 0;
-let map = L.map("map").setView([14.205, 120.885], 17);
+
 let currentPopup = null; // Track the currently open popup
 let firstPopupOpened = false; // Ensure only the first marker opens a popup
 let displayAssessState = false;
@@ -12,6 +13,20 @@ let displaySubgrpState = false;
 let currSubgrpIDPopup = 0;
 let currSubgrpParentIDPopup = 0;
 let markerArr = [];
+let assessGroup = {};
+const main = document.getElementById("main");
+// -------------------------------------------------------------------------
+
+document.addEventListener("click", (event) => {
+  const panel = document.querySelector(".groupsList"); // Target div
+  const selected = document.querySelector(".groupsList h6.selected"); // Target div
+
+  if (!panel || !selected) return;
+
+  if (panel.contains(event.target) && !selected.contains(event.target)) {
+    closeGroupDetails(openedId); // Example: Close the div
+  }
+});
 
 const yellowIcon = new L.Icon({
   iconUrl:
@@ -24,94 +39,80 @@ const yellowIcon = new L.Icon({
   shadowSize: [41, 41],
 });
 
-// let markerData = {
-//   assessments: [
-//     {
-//       end_coor: [14.2984189, 121.0522294],
-//       id: 3,
-//       start_coor: [14.2984189, 121.0522294],
-//     },
-//     {
-//       end_coor: [14.3219259, 121.0621044],
-//       id: 6,
-//       start_coor: [14.3219259, 121.0621044],
-//     },
-//     {
-//       end_coor: [14.3219259, 121.0621044],
-//       id: 20,
-//       start_coor: [14.3219259, 121.0621044],
-//     },
-//     {
-//       end_coor: [14.3219259, 121.0621044],
-//       id: 30,
-//       start_coor: [14.3219259, 121.0621044],
-//     },
-//     {
-//       end_coor: [14.3219259, 121.0621044],
-//       id: 40,
-//       start_coor: [14.3219259, 121.0621044],
-//     },
-//     {
-//       end_coor: [14.2042025, 120.8607875],
-//       id: 4,
-//       start_coor: [14.2042025, 120.8607875],
-//     },
-//     {
-//       end_coor: [14.2225073, 120.8425914],
-//       id: 5,
-//       start_coor: [14.2225073, 120.8425914],
-//     },
-//     {
-//       end_coor: [14.2225073, 120.8425914],
-//       id: 29,
-//       start_coor: [14.2225073, 120.8425915],
-//     },
-//     {
-//       end_coor: [14.2225073, 120.8425914],
-//       id: 39,
-//       start_coor: [14.2225073, 120.8425915],
-//     },
-//     {
-//       end_coor: [14.2225073, 120.8425914],
-//       id: 49,
-//       start_coor: [14.2225073, 120.8425915],
-//     },
-//   ],
-// };
+let map = L.map("map", {
+  center: [12.8797, 121.774], // Center of the Philippines
+  zoom: 6, // Default zoom level
+  maxBounds: [
+    [3.5, 116.0], // Southwest corner (lower-left)
+    [23.5, 127.0], // Northeast corner (upper-right)
+  ],
+  maxBoundsViscosity: 1.0, // Prevents dragging outside bounds
+  minZoom: 6, // Prevents zooming out too much
+});
 
-// let markerData = {
-//   Indang: [
-//     {
-//       end_coor: [-14.6325006, 121.9502079],
-//       id: 1,
-//       start_coor: [-14.5995264, 120.9842123],
-//       cracks: [
-//         {
-//           type: "Transverse Crack222",
-//           severity: "High",
-//           recommendedSolution: "Seal with hot mix asphalt.",
-//         },
-//         {
-//           type: "Transverse Crack",
-//           severity: "High",
-//           recommendedSolution: "Seal with hot mix asphalt.",
-//         },
-//         {
-//           type: "Transverse Crack",
-//           severity: "High",
-//           recommendedSolution: "Seal with hot mix asphalt.",
-//         },
-//       ],
-//     },
-//   ],
-// };
+// Cursor Coordinates Display
+var coordinates = L.control({ position: "bottomright" });
 
-let assessGroup = {};
+coordinates.onAdd = function () {
+  var div = L.DomUtil.create("div", "coordinate-display");
+  div.style.padding = "5px";
+  div.style.background = "rgba(255, 255, 255, 0.8)";
+  div.style.borderRadius = "5px";
+  div.innerHTML = "Lat: -, Lng: -";
+  return div;
+};
 
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+coordinates.addTo(map);
+
+map.on("mousemove", function (e) {
+  document.querySelector(
+    ".coordinate-display"
+  ).innerHTML = `Lat: ${e.latlng.lat.toFixed(5)}, Lng: ${e.latlng.lng.toFixed(
+    5
+  )}`;
+});
+
+// Base Layers
+let osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
 }).addTo(map);
+
+let satellite = L.tileLayer(
+  "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+  {
+    attribution: "&copy; OpenTopoMap contributors",
+  }
+);
+
+let light = L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+  {
+    attribution: "&copy; CartoDB contributors",
+  }
+);
+
+let dark = L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  {
+    attribution: "&copy; CartoDB contributors",
+  }
+);
+
+// Layer Control
+let baseLayers = {
+  OpenStreetMap: osm,
+  "Satellite View": satellite,
+  "Light Mode": light,
+  "Dark Mode": dark,
+};
+
+// Add Layer Control Button
+L.control.layers(baseLayers, null, { position: "bottomright" }).addTo(map);
+
+L.control.zoom({ position: "bottomright" }).addTo(map);
+
+// ------------------------------------------------------------------------
 
 const fetchGroup = async (param, relation = "") => {
   try {
@@ -170,17 +171,13 @@ const fetchCracks = async (assessID) => {
 const groupSorting = async (groupID, selected = "") => {
   if (!selected) {
     selectedGroup = document.getElementById("sortGroup").value;
-    console.log("opened1", openedId);
-    closeSubgrpDetails(
-      currSubgrpIDPopup,
-      currSubgrpParentIDPopup,
-      (all = true)
-    );
-    console.log("opened2", openedId);
-    displayGroupLevel(selectedGroup);
+    // closeSubgrpDetails(
+    //   currSubgrpIDPopup,
+    //   currSubgrpParentIDPopup,
+    //   (all = true)
+    // );
 
-    console.log("opened3", openedId);
-
+    displayGroupLevels();
     return;
   }
   openedId = 0;
@@ -189,165 +186,400 @@ const groupSorting = async (groupID, selected = "") => {
   displayGroupLevel(selectedGroup, groupID);
 };
 
-const displayGroupLevel = async (param, groupID = 0) => {
-  console.log("okohdjkhjkhfsdf", groupID);
-  let groupNames = document.getElementById("groupNames");
+const init = async () => {
+  homePanel();
+  selectedGroup = document.getElementById("sortGroup").value;
+  displayGroupLevels();
+};
 
-  let groupLevels = await fetchGroup(param);
-  console.log("Hello:", groupLevels);
+const homePanel = async (param, groupID = 0) => {
+  let target = document.querySelector(".groupsPanel");
+  if (target) target.remove();
+  main.insertAdjacentHTML(
+    "afterend",
+    `
+  <aside class="groupsPanel">
+    <div class="groupsPanel__menu" id="groupsPanel__menu">
+      <span class=""></span>
+      <span class=""></span>
+      <span class=""></span>
+    </div>
+    <div class="backdrop absolute w-full h-full top-0 left-0 z-40 sm:hidden"></div>
+    <div class="groupsPanel__wrapper h-full grid grid-rows-[auto_1fr] z-10">
+      <div class="groupsLabel z-50 text-dar w-full top-0 right-0">
+        <label class="groupsPanel--sorts h6 border-b-2 grid px-3 py-3 sm:grid-cols-[auto_auto] gap-2">
+          Sort by:
+          <select id="sortGroup" class="text-dark" onchange="groupSorting()">
+            <option value="region" selected>Region</option>
+            <option value="province">Province</option>
+            <option value="city">City</option>
+          </select>
+        </label>
+      </div>
+      <div class="groupsList">
+        <div id="groupNames"></div>
+      </div>
+    </div>
+  </aside>
+`
+  );
+
+  document.getElementById("groupsPanel__menu").addEventListener("click", () => {
+    document.querySelector(".groupsPanel").classList.toggle("open");
+    document.querySelector(".groupsPanel__wrapper").classList.toggle("open");
+    document.querySelector(".backdrop").classList.toggle("z-40");
+  });
+
+  document.addEventListener("touchstart", (event) => {
+    const menuButton = document.getElementById("groupsPanel__menu");
+    const panel = document.querySelector(".groupsPanel");
+    const wrapper = document.querySelector(".groupsPanel__wrapper");
+    const backdrop = document.querySelector(".backdrop");
+
+    // Check if the click is outside the panel and menu button
+    if (
+      !panel.contains(event.target) &&
+      !menuButton.contains(event.target) &&
+      window.innerWidth < 640 // Apply only for mobile screens (sm)
+    ) {
+      panel.classList.remove("open");
+      wrapper.classList.remove("open");
+      backdrop.classList.add("z-40");
+    }
+  });
+
+  // displayGroupDetails(groupLevels[0].id);
+
+  // if (!groupID) displayGroupDetails(groupLevels[0].id);
+  // else {
+  //   console.log("hioashs", !groupID);
+  //   displayGroupDetails(groupID);
+  // }
+};
+
+const displayGroupLevels = async () => {
+  const groupLevels = await fetchGroup(selectedGroup);
+  const groupNames = document.getElementById("groupNames");
 
   groupNames.innerHTML = "";
-
   for (let groupLevel of groupLevels) {
     groupNames.innerHTML += `
-        <div id="group-${groupLevel.id}">
-            <span class="pin_loc bg-primary flex gap-1 items-center py-4 allindent cursor-pointer border-y-[1px]" id="toggle-${groupLevel.id}" onclick="displayGroupDetails(${groupLevel.id})">
-                <img src="/img/pin-loc.png" alt="" />
-                <p>${groupLevel.name}</p>
-            </span>
-        </div>`;
+        <h6 id="group-${groupLevel.id}" onclick="displayGroupDetails(${groupLevel.id})">${groupLevel.name}</h6>
+      `;
 
-    const assess = await fetchGroup(groupLevel.id, "assessments");
-    const key = `groupAss-${groupLevel.id}`;
-    assessGroup[key] = assess.assessments;
-    addMarker(assessGroup[key]);
-  }
-
-  if (!groupID) displayGroupDetails(groupLevels[0].id);
-  else {
-    console.log("hioashs", !groupID);
-    displayGroupDetails(groupID);
+    // const assess = await fetchGroup(groupLevel.id, "assessments");
+    // const key = `groupAss-${groupLevel.id}`;
+    // assessGroup[key] = assess.assessments;
+    // addMarker(assessGroup[key]);
   }
 };
 
 const displayGroupDetails = async (ID) => {
-  if (currSubgrpIDPopup != ID || currSubgrpIDPopup != openedId) {
-    displayAssessState = false;
-    displaySubgrpState = false;
-    currSubgrpIDPopup = ID;
-  }
+  if (ID === openedId) return;
 
-  let groupNames = document.getElementById(`group-${ID}`);
-  const key = `groupAss-${ID}`;
-  if (openedId !== ID) {
-    let openedGroup = document.getElementById(`details-${openedId}`);
-    displayAssessState = false;
+  // if (currSubgrpIDPopup != ID || currSubgrpIDPopup != openedId) {
+  //   displayAssessState = false;
+  //   displaySubgrpState = false;
+  //   currSubgrpIDPopup = ID;
+  // }
 
-    const details = await fetchGroup(ID);
-    const assess = await fetchGroup(ID, "assessments");
+  // let groupNames = document.getElementById(`group-${ID}`);
+  // const key = `groupAss-${ID}`;
+  // if (openedId !== ID) {
+  //   let openedGroup = document.getElementById(`details-${openedId}`);
+  //   displayAssessState = false;
 
-    removeMarker(assessGroup[key]);
+  const details = await fetchGroup(ID);
 
-    assessGroup[key] = assess.assessments;
-    addMarker(assessGroup[key], "yellow");
+  //   const assess = await fetchGroup(ID, "assessments");
 
-    let coords = [];
-    assessGroup[key].forEach((ass) => {
-      coords.push(ass.start_coor);
-    });
+  //   removeMarker(assessGroup[key]);
 
-    if (openedGroup) {
-      openedGroup.remove();
-      removeMarker(assessGroup[`groupAss-${openedId}`]);
-      addMarker(assessGroup[`groupAss-${openedId}`]);
+  //   assessGroup[key] = assess.assessments;
+  //   addMarker(assessGroup[key], "yellow");
+
+  //   let coords = [];
+  //   assessGroup[key].forEach((ass) => {
+  //     coords.push(ass.start_coor);
+  //   });
+
+  //   if (openedGroup) {
+  //     openedGroup.remove();
+  //     removeMarker(assessGroup[`groupAss-${openedId}`]);
+  //     addMarker(assessGroup[`groupAss-${openedId}`]);
+  //   }
+  //   openedId = ID;
+
+  closeGroupDetails(openedId);
+  main.insertAdjacentHTML(
+    "afterend",
+    `
+    <aside class="groupDetails details" id="groupDetails-${ID}">
+      <div
+        id="details__toggle"
+        class="details__toggle z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out"
+      >
+        &lsaquo;
+      </div>
+      <div>
+        <div
+          class="top flex z-50 w-full items-center top-0 left-0 allindent bg-dark text-light"
+        >
+          <h2 class="text-light">Location</h2>
+        </div>
+      </div>
+      <div
+        class="yellow-part bg-primary flex justify-between items-center border-y-[1px]"
+        id="toggle-2"
+      >
+        <span class="pin_loc flex gap-1 items-center cursor-pointer">
+          <img src="/img/pin-loc.png" alt="" />
+          <p>${details.name}</p>
+        </span>
+        <a class="text-4xl" onclick="closeGroupDetails(${ID}, ${true})">×</a>
+      </div>
+
+      <div class="detailedInfo h-full overflow-y-auto" id="details-2">
+        <p class="font-bold detailed-info border-t-2">
+          Detailed Information
+        </p>
+        <div class="detailedInfos__wrapper">
+          <div class="detailed-info">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/length.png" alt="" />
+              <p class="font-bold">Length of Road Monitored:</p>
+            </span>
+            <p class="pl-[56px]">${details.n_assess * 5} meters</p>
+          </div>
+          <div class="detailed-info">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/lanes.png" alt="" />
+              <p class="font-bold">Number of Assessments:</p>
+            </span>
+            <p class="pl-[56px]">${details.n_assess} assessments</p>
+          </div>
+          <div class="detailed-info">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/cracks-detected.png" alt="" />
+              <p class="font-bold">Types of Cracks Detected:</p>
+            </span>
+            <span class="grid gap-2">
+              <p class="pl-[56px]">Transverse Cracks (${
+                details.n_cracks.trans
+              })</p>
+              <p class="pl-[56px]">Longitudinal Cracks (${
+                details.n_cracks.longi
+              })</p>
+              <p class="pl-[56px]">Multiple Cracks (${
+                details.n_cracks.multi
+              })</p>
+            </span>
+          </div>
+          <div class="detailed-info">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/total-crack.png" alt="" />
+              <p class="font-bold">Total Number of Cracks:</p>
+            </span>
+            <p class="pl-[56px]">${
+              details.n_cracks.trans +
+              details.n_cracks.longi +
+              details.n_cracks.multi
+            } cracks</p>
+          </div>
+          <div class="detailed-info">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/date.png" alt="" />
+              <p class="font-bold">Date Last Updated:</p>
+            </span>
+            <p class="pl-[56px]">${details.date}</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  `
+  );
+
+  document.getElementById("details__toggle").addEventListener("click", () => {
+    document.querySelector(".details").classList.toggle("close");
+    document.querySelector(".details__toggle").classList.toggle("scale-x-[-1]");
+    document.querySelector(".details__toggle").classList.toggle("pl-5");
+    document.querySelector(".details__toggle").classList.toggle("pr-5");
+  });
+
+  const toggleButton = document.getElementById("details__toggle");
+  const detailsPanel = document.querySelector(".details");
+
+  // Function to reset classes when screen reaches 'sm'
+  function resetOnSm(event) {
+    if (event.matches) {
+      detailsPanel.classList.remove("close");
+      toggleButton.classList.remove("scale-x-[-1]", "pl-5", "pr-5");
+      toggleButton.classList.add("pl-5");
     }
-    openedId = ID;
+  }
+  // Media query for 'sm' breakpoint (640px)
+  const smMediaQuery = window.matchMedia("(min-width: 640px)");
+  // Run on page load and when media query changes
+  resetOnSm(smMediaQuery);
+  smMediaQuery.addEventListener("change", resetOnSm);
 
-    groupNames.innerHTML += `
-            <div class="summaryDetailed grid gap-5" id="details-${ID}">
-              <div>
-                <p class="font-bold detailed-info border-t-2">Detailed Information <button onclick="generateSummary(${ID})">SUMMARY</button></p>
-                <div>
-                  <div class="detailed-info">
-                    <span class="flex gap-[15px] items-center">
-                    <img src="/img/length.png" alt="" />
-                    <p class="font-bold">Length of Road Monitored:</p>
-                    </span>
-                    <p class="pl-[56px]">${details.n_assess * 5} meters</p>
-                  </div>
-                  <div class="detailed-info">
-                      <span class="flex gap-[15px] items-center">
-                      <img src="/img/lanes.png" alt="" />
-                      <p class="font-bold">Number of Assessments:</p>
-                      </span>
-                      <p class="pl-[56px]">${details.n_assess} assessments</p>
-                  </div>
-                  <div class="detailed-info">
-                      <span class="flex gap-[15px] items-center">
-                      <img src="/img/cracks-detected.png" alt="" />
-                      <p class="font-bold">Types of Cracks Detected:</p>
-                      </span>
-                      <span class="grid gap-2">
-                      <p class="pl-[56px]">Transverse Cracks (${
-                        details.n_cracks.trans
-                      })</p>
-                      <p class="pl-[56px]">Longitudinal Cracks (${
-                        details.n_cracks.longi
-                      })</p>
-                      <p class="pl-[56px]">Multiple Cracks (${
-                        details.n_cracks.multi
-                      })</p>
-                      </span>
-                  </div>
-                  <div class="detailed-info">
-                      <span class="flex gap-[15px] items-center">
-                      <img src="/img/total-crack.png" alt="" />
-                      <p class="font-bold">Total Number of Cracks:</p>
-                      </span>
-                      <p class="pl-[56px]">${
-                        details.n_cracks.trans +
-                        details.n_cracks.longi +
-                        details.n_cracks.multi
-                      }  cracks</p>
-                  </div>
-                  <div class="detailed-info">
-                      <span class="flex gap-[15px] items-center">
-                      <img src="/img/date.png" alt="" />
-                      <p class="font-bold">Date Last Updated:</p>
-                      </span>
-                      <p class="pl-[56px]">${details.date}</p>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <a><p class="font-bold detailed-info border-t-2" onclick="displayGroupAssessments(${ID})">&#43; Assessments</p></a>
-                <div id="displayAssess-${ID}"></div>
-              </div>
-              <div>
-                <a><p class="font-bold detailed-info border-t-2" onclick="displayGroupSubgroups(${ID})">&#43; Subgroups</p></a>
-                <div id="displaySubgrp-${ID}"></div>
-              </div>
-            </div>`;
+  changePanel(ID, details.parent_id);
+  openedId = ID;
 
-    let expanded = document.getElementById(`toggle-${ID}`);
-    let sumDetails = document.getElementById(`details-${ID}`);
+  //   let expanded = document.getElementById(`toggle-${ID}`);
+  //   let sumDetails = document.getElementById(`details-${ID}`);
 
-    expanded.addEventListener("click", () => {
-      sumDetails.classList.toggle("open");
-    });
+  //   expanded.addEventListener("click", () => {
+  //     sumDetails.classList.toggle("open");
+  //   });
 
-    zoomToPoints(coords);
-    sumDetails.classList.add("open");
-  } else {
-    let track = document.getElementById(`details-${ID}`);
+  //   zoomToPoints(coords);
+  //   sumDetails.classList.add("open");
+  // } else {
+  //   let track = document.getElementById(`details-${ID}`);
 
-    if (!track.classList.contains("open")) {
-      let coords = [];
-      assessGroup[key].forEach((ass) => {
-        coords.push(ass.start_coor);
+  //   if (!track.classList.contains("open")) {
+  //     let coords = [];
+  //     assessGroup[key].forEach((ass) => {
+  //       coords.push(ass.start_coor);
+  //     });
+  //     zoomToPoints(coords);
+  //     removeMarker(assessGroup[key]);
+  //     addMarker(assessGroup[key], "yellow");
+  //   } else {
+  //     const allCoords = Object.values(assessGroup).flatMap((group) =>
+  //       group.map((item) => item.start_coor)
+  //     );
+  //     zoomToPoints(allCoords);
+  //     removeMarker(assessGroup[key]);
+  //     addMarker(assessGroup[key]);
+  //   }
+  // }
+};
+
+const changePanel = async (ID, parentID) => {
+  console.log("changes");
+  let subgrp = await fetchGroup(ID, "children");
+  let assess = await fetchGroup(ID, "assessments");
+
+  document.querySelector(".groupsPanel").remove();
+
+  let backFunc = `displayGroupDetails(${parentID})`;
+  if (!parentID) backFunc = `closeGroupDetails(${openedId}, ${true})`;
+  main.insertAdjacentHTML(
+    "afterend",
+    `
+    <aside class="groupsPanel">
+      <div class="groupsPanel__menu" id="groupsPanel__menu">
+        <span class=""></span>
+        <span class=""></span>
+        <span class=""></span>
+      </div>
+      <div class="groupsPanel__back"><span onclick="${backFunc}">&larr;</span></div>
+      <div
+        class="backdrop absolute w-full h-full top-0 left-0 z-40 sm:hidden"
+      ></div>
+      <div class="groupsPanel__wrapper h-full grid grid-rows-[auto_1fr]">
+        <div class="groupsLabel z-50 w-full">
+          <div
+            class="groupsPanel--subs grid grid-cols-2 justify-items-center"
+          >
+            <h6 id="assessments" class="open">Assessments</h6>
+            <h6 id="subgroups">Subgroups</h6>
+          </div>
+        </div>
+
+        <div class="groupsList">
+          <div class="groupsList--content open" id="assessments-content">
+
+          </div>
+
+          <div class="groupsList--content" id="subgroups-content">
+
+          </div>
+        </div>
+      </div>
+    </aside>
+    `
+  );
+
+  document.getElementById("groupsPanel__menu").addEventListener("click", () => {
+    document.querySelector(".groupsPanel").classList.toggle("open");
+    document.querySelector(".groupsPanel__wrapper").classList.toggle("open");
+    document.querySelector(".groupsPanel__back").classList.toggle("open");
+    document.querySelector(".backdrop").classList.toggle("z-40");
+  });
+
+  document.addEventListener("touchstart", (event) => {
+    const menuButton = document.getElementById("groupsPanel__menu");
+    const panel = document.querySelector(".groupsPanel");
+    const wrapper = document.querySelector(".groupsPanel__wrapper");
+    const back = document.querySelector(".groupsPanel__back");
+    const backdrop = document.querySelector(".backdrop");
+
+    // Check if the click is outside the panel and menu button
+    if (
+      !panel.contains(event.target) &&
+      !menuButton.contains(event.target) &&
+      window.innerWidth < 640 // Apply only for mobile screens (sm)
+    ) {
+      panel.classList.remove("open");
+      wrapper.classList.remove("open");
+      back.classList.remove("open");
+      backdrop.classList.add("z-40");
+    }
+  });
+
+  const assessContent = document.getElementById("assessments-content");
+  assess = assess.assessments;
+  let index = 0;
+  assessContent.innerHTML = "";
+  assess.forEach((ass) => {
+    index++;
+    assessContent.innerHTML += `
+        <h6 id="assess-${ass.id}" onclick="">Assessment ${index}</h6>
+      `;
+  });
+
+  const subgrpContent = document.getElementById("subgroups-content");
+  subgrp = subgrp.children;
+  subgrpContent.innerHTML = "";
+  subgrp.forEach((sub) => {
+    subgrpContent.innerHTML += `
+        <h6 id="group-${sub.id}" onclick="displayGroupDetails(${sub.id})">${sub.name}</h6>
+      `;
+  });
+
+  document.querySelectorAll(".groupsPanel--subs h6").forEach((sub) => {
+    sub.addEventListener("click", () => {
+      document.querySelectorAll(".groupsPanel--subs h6").forEach((subI) => {
+        subI.classList.remove("open");
       });
-      zoomToPoints(coords);
-      removeMarker(assessGroup[key]);
-      addMarker(assessGroup[key], "yellow");
-    } else {
-      const allCoords = Object.values(assessGroup).flatMap((group) =>
-        group.map((item) => item.start_coor)
-      );
-      zoomToPoints(allCoords);
-      removeMarker(assessGroup[key]);
-      addMarker(assessGroup[key]);
-    }
-  }
+      sub.classList.add("open");
+      document.querySelectorAll(".groupsList--content").forEach((content) => {
+        content.classList.remove("open");
+      });
+      document.getElementById(`${sub.id}-content`).classList.add("open");
+    });
+  });
+};
+
+const closeGroupDetails = async (ID, animate = false) => {
+  let target = document.getElementById(`groupDetails-${ID}`);
+  if (!target) return;
+
+  if (animate) {
+    openedId = 0;
+    target.classList.add("animate-moveOutLeft", "z-40");
+    homePanel();
+    displayGroupLevels();
+    document.getElementById("sortGroup").value = selectedGroup;
+    setTimeout(() => {
+      target.remove();
+    }, 300);
+  } else target.remove();
+
+  // document.getElementById(`group-${ID}`).classList.remove("selected");
 };
 
 const displayGroupAssessments = async (ID) => {
@@ -729,10 +961,9 @@ map.on("click", () => {
   closeAssessmentDetails();
 });
 
-
 async function generateSummary(ID) {
   let data = await fetchGroup(ID, "summary");
-  console.log(data)
+  console.log(data);
   const container = document.createElement("div");
   container.classList.add("container");
   container.id = "report-container";
@@ -807,8 +1038,6 @@ async function generateAssessments(data) {
 
 // Add markers to the map
 
-displayGroupLevel(selectedGroup);
+// displayGroupLevel(selectedGroup);
 
-// setInterval(() => {
-//   console.log("state", openedId);
-// }, 1000);
+init();

@@ -10,10 +10,10 @@
   }
 
   .container {
-    @apply max-w-[1024px] w-full mx-auto;
+    @apply w-full mx-auto max-w-[1600px];
   }
 
-  h1 {
+  /* h1 {
     @apply text-[48px]/[58.1px] font-extrabold;
   }
   h2 {
@@ -22,11 +22,44 @@
   h3 {
     @apply text-[24px]/[29px] italic;
   }
-  h6 {
+  h4,
+  .h4 {
+    @apply text-[18px]/[22px];
+  }
+  h6,
+  .h6, {
     @apply text-[14px]/[16.9px];
   }
-  p {
+  p,
+  .p {
     @apply text-[20px]/[24.2px];
+  } */
+
+  h1 {
+    @apply font-extrabold lg:text-5xl md:text-4xl text-2xl;
+  }
+  h2 {
+    @apply font-bold lg:text-3xl md:text-2xl text-lg;
+  }
+  h3 {
+    @apply italic lg:text-2xl md:text-xl text-sm;
+  }
+  h4,
+  .h4 {
+    @apply lg:text-lg md:text-base text-xs;
+  }
+  h5,
+  .h5 {
+    @apply lg:text-base md:text-sm text-xs;
+  }
+  h6,
+  .h6,
+  .adjust {
+    @apply lg:text-sm text-xs;
+  }
+  p,
+  .p {
+    @apply lg:text-xl md:text-lg text-sm;
   }
 
   a {
@@ -34,26 +67,121 @@
   }
 
   .allindent {
-    padding-left: 56px;
+    @apply lg:pl-14 md:pl-10 pl-8;
   }
 
   .detailed-info {
-    @apply py-[10px] allindent border-b-2;
+    @apply py-[10px] allindent border-b-2 pr-5;
   }
 
   .crack-info {
-    @apply py-[19px] allindent border-b-2;
+    @apply py-[19px] allindent border-b-2 pr-5;
   }
 
-  #search-img{
+  #search-img {
     width: 1000px;
   }
 
   .summaryDetailed {
-    @apply h-auto max-h-0 overflow-hidden duration-500 ease-in;
+    @apply h-auto max-h-0 overflow-hidden duration-500 ease-in-out;
   }
 
   .summaryDetailed.open {
-    @apply max-h-[250rem]; /* Adjust max-height based on content size */
+    @apply max-h-[250rem] duration-1000 ease-in-out; /* Adjust max-height based on content size */
   }
+
+  .gis {
+    @apply h-full w-full pl-0 relative duration-300 ease-in-out lg:pt-11 md:pt-9 pt-6;
+  }
+
+  .gis.open {
+    @apply ml-96 duration-300 ease-in-out;
+  }
+
+  .groupsPanel {
+    @apply animate-moveRight flex 
+    sm:max-w-[200px] sm:w-[40dvh] h-[45dvh] sm:max-h-[400px]
+    bg-dark/70 flex-col absolute z-50 lg:top-14 md:top-12 sm:top-10 top-9
+    right-[10px] rounded-lg text-light max-w-11 max-h-10 overflow-hidden
+    duration-150 ease-in-out;
+  }
+
+  .groupsPanel.open {
+    @apply max-w-[200px] w-[40dvh] max-h-[400px] duration-300 ease-in-out z-[60];
+  }
+
+  .groupsPanel__menu {
+    @apply grid gap-[2px] sm:hidden z-[70] absolute top-0 right-0 mt-2 mr-2;
+  }
+
+  .groupsPanel__menu span {
+    @apply inline-block w-7 h-[6px] bg-light rounded-lg;
+  }
+
+  .groupsPanel__back {
+    @apply z-50 opacity-0 sm:opacity-100 relative right-0 top-0 sm:left-0 mt-[2px] ml-2 text-3xl grid justify-items-start;
+  }
+
+  .groupsPanel__back.open {
+    @apply z-[60] left-0 opacity-100;
+  }
+
+  .groupsPanel span {
+    @apply hover:text-primary rounded-lg cursor-pointer duration-200 ease-in-out;
+  }
+
+  .groupsPanel__wrapper {
+    @apply opacity-0 sm:opacity-100 duration-150 ease-in-out overflow-y-hidden;
+  }
+  .groupsPanel__wrapper.open {
+    @apply opacity-100 duration-300 ease-in-out;
+  }
+
+  .details {
+    @apply animate-moveInLeft duration-300 ease-in-out w-[75dvw] sm:w-[45dvw] md:w-[40dvw] lg:w-[35dvw] sm:max-w-[310px] md:max-w-[410px] lg:max-w-[510px] h-full bg-light flex flex-col border-r-[8px] border-gray-200 absolute z-50 top-0 left-0;
+  }
+
+  .details.close {
+    @apply -translate-x-full duration-300 ease-in-out;
+  }
+
+  .top {
+    @apply lg:h-[46.7px] md:h-[36.7px] truncate w-[10px];
+  }
+
+  .yellow-part {
+    @apply allindent pr-8 lg:py-4 md:py-[10px] sm:py-[6px] py-[4px];
+  }
+
+  .groupsPanel--subs h6 {
+    @apply py-3 w-full text-center border-b-2 duration-200 ease-in-out hover:bg-light/15 rounded-t-lg cursor-pointer;
+  }
+  .groupsPanel--subs h6.open {
+    @apply border-b-2 border-primary;
+  }
+
+  .groupsList {
+    @apply py-3 relative h-full overflow-y-hidden;
+  }
+
+
+  .groupsList--content {
+    @apply translate-y-full h-full w-full absolute z-[-1] top-0 opacity-0 overflow-y-auto;
+  }
+
+  .groupsList--content.open {
+    @apply translate-y-0 duration-300 static opacity-100 ease-in-out;
+  }
+
+  .groupsList h6 {
+    @apply cursor-pointer rounded-md mx-3 px-2 py-2 my-1 hover:bg-primary duration-200 ease-in-out;
+  }
+
+  .groupsList h6.selected {
+    @apply bg-primary;
+  }
+
+  /* .details__toggle {
+    @apply  z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out;
+  } */
 }
