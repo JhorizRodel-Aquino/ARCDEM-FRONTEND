@@ -330,7 +330,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
             class="yellow-part bg-primary flex justify-between items-center"
            >
             <span class="flex gap-1 items-center py-4">
-              <img src="/img/pin-loc.png" alt="" />
+              <img src="img/pin-loc.png" alt="" />
               <span id="address" class="">
                
               </span>
@@ -556,7 +556,7 @@ const displayGroupDetails = async (ID) => {
         id="toggle-2"
       >
         <span class="pin_loc flex gap-1 items-center cursor-pointer">
-          <img src="/img/pin-loc.png" alt="" />
+          <img src="img/pin-loc.png" alt="" />
           <p>${details.name}</p>
         </span>
         <a class="text-4xl" onclick="closeGroupDetails(${ID}, ${true})">×</a>
@@ -569,21 +569,21 @@ const displayGroupDetails = async (ID) => {
         <div class="detailedInfos__wrapper">
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="/img/length.png" alt="" />
+              <img src="img/length.png" alt="" />
               <p class="font-bold">Length of Road Monitored:</p>
             </span>
             <p class="pl-[56px]">${details.n_assess * 5} meters</p>
           </div>
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="/img/lanes.png" alt="" />
+              <img src="img/lanes.png" alt="" />
               <p class="font-bold">Number of Assessments:</p>
             </span>
             <p class="pl-[56px]">${details.n_assess} assessments</p>
           </div>
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="/img/cracks-detected.png" alt="" />
+              <img src="img/cracks-detected.png" alt="" />
               <p class="font-bold">Types of Cracks Detected:</p>
             </span>
             <span class="grid gap-2">
@@ -600,7 +600,7 @@ const displayGroupDetails = async (ID) => {
           </div>
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="/img/total-crack.png" alt="" />
+              <img src="img/total-crack.png" alt="" />
               <p class="font-bold">Total Number of Cracks:</p>
             </span>
             <p class="pl-[56px]">${
@@ -611,7 +611,7 @@ const displayGroupDetails = async (ID) => {
           </div>
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="/img/date.png" alt="" />
+              <img src="img/date.png" alt="" />
               <p class="font-bold">Date Last Updated:</p>
             </span>
             <p class="pl-[56px]">${details.date}</p>
