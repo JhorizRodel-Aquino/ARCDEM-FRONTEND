@@ -1,7 +1,5 @@
 // const url = "http://192.168.68.116:5000";
-// const url = "http://127.0.0.1:5000";
-const url = "https://api.arcdem.site";
-
+const url = "http://127.0.0.1:5000";
 // const url = "https://roadtrack-test.onrender.com";
 
 let selectedGroup;
@@ -18,8 +16,6 @@ let currSubgrpParentIDPopup = 0;
 let markerArr = [];
 let assessGroup = {};
 let markers = {};
-const centerGIS = document.getElementById("centerGIS");
-const sideGIS = document.getElementById("sideGIS");
 const main = document.getElementById("main");
 // -------------------------------------------------------------------------
 
@@ -113,6 +109,39 @@ let googleStreets = L.tileLayer(
   }
 );
 
+let googleTerrain = L.tileLayer(
+  "http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}",
+  {
+    maxZoom: 20,
+    subdomains: ["mt0", "mt1", "mt2", "mt3"],
+  }
+);
+
+// let satellite = L.tileLayer(
+//   "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+//   {
+//     attribution: "&copy; OpenTopoMap contributors",
+//   }
+// );
+
+// let light = L.tileLayer(
+//   "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+//   {
+//     attribution: "&copy; CartoDB contributors",
+//   }
+// );
+
+// let dark = L.tileLayer(
+//   "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+//   {
+//     attribution: "&copy; CartoDB contributors",
+//   }
+// );
+// googleSat = L.tileLayer("http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", {
+//   maxZoom: 20,
+//   subdomains: ["mt0", "mt1", "mt2", "mt3"],
+// });
+
 googleHybrid = L.tileLayer(
   "http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}",
   {
@@ -120,7 +149,6 @@ googleHybrid = L.tileLayer(
     subdomains: ["mt0", "mt1", "mt2", "mt3"],
   }
 );
-
 
 // Layer Control
 let baseLayers = {
@@ -168,7 +196,7 @@ const fetchGroup = async (param, relation = "") => {
 
 const fetchAncestors = async (ID) => {
    try {
-     let link = `${url}/assessment/${ID}/address`;
+     let link = `${url}/group/${ID}/ancestors`;
 
      const response = await fetch(link, {
        method: "GET",
@@ -267,7 +295,8 @@ const init = async () => {
 
 const displayMarkers = async () => {
   const assessments = await fetchAssessments();
-
+  const centerGIS = document.getElementById("centerGIS");
+  const sideGIS = document.getElementById("sideGIS");
 
   assessments.forEach((assessment) => {
     let lat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
@@ -315,14 +344,12 @@ const displayMarkersDetails = async (ID, lat, lng) => {
 
           <div>
             <div
-              class="top flex justify-between z-50 w-full items-center top-0 left-0 allindent pr-8 bg-dark text-light gap-5"
+              class="top flex z-50 w-full items-center top-0 left-0 allindent bg-dark text-light gap-5"
             >
               <h5 class="inline" id="coordinates">
-                <span>${lat.toFixed(6)},</span> <span>${lng.toFixed(6)}</span>
+                <span>${lat.toFixed(7)},</span> <span>${lng.toFixed(7)}</span>
               </h5>
-              <h2 class="opacity-0">.</h2>
               <h5 class="inline">Road: 5m</h5>
-              
             </div>
           </div>
 
@@ -332,7 +359,11 @@ const displayMarkersDetails = async (ID, lat, lng) => {
             <span class="flex gap-1 items-center py-4">
               <img src="/img/pin-loc.png" alt="" />
               <span id="address" class="">
-               
+                <a onclick="goBack(3, 2)"><p class="inline">Davao,</p></a>
+
+                <a onclick="goBack(2, 1)"><p class="inline">no province,</p></a>
+
+                <a onclick="goBack(1, 0)"><p class="inline">Bicol</p></a>
               </span>
             </span>
             <a class="text-4xl" onclick="closeMarkerDetails()">×</a>
@@ -345,18 +376,18 @@ const displayMarkersDetails = async (ID, lat, lng) => {
   `
   );
 
-    let address = document.querySelector("#address");
-    const ancestors = await fetchAncestors(ID);
-    console.log("ID", ancestors);
+    // let address = document.querySelector(".address");
+    // const ancestors = await fetchAncestors(ID);
+    // console.log("ID", ID);
 
-    ancestors.forEach((ancestor) => {
-      address.insertAdjacentHTML(
-        "afterend",
-        `
-      <p class="inline">${ancestor.name} ></p>
-      `
-      );
-    });
+    // ancestors.forEach((ancestor) => {
+    //   address.insertAdjacentHTML(
+    //     "afterend",
+    //     `
+    //   <p class="inline">${ancestor.name}</p>
+    //   `
+    //   );
+    // });
   let crackDetails = document.getElementById("crackDetails");
   let index = 0;
   assessCracks.cracks.forEach((crack) => {
@@ -393,8 +424,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
 
     index++;
   });
-  let filename = `${url}/image/${assessCracks.filename}.jpg`;
-  crackDetails.innerHTML += `<img src="${filename}" class="object-fit p-5" />`;
+  crackDetails.innerHTML += `<img src="crack.png" class="object-fit p-5" />`;
 };
 
 const handleAssessClick = (ID, lat, lng) => {
@@ -497,9 +527,8 @@ const displayGroupLevels = async () => {
 const displayGroupDetails = async (ID) => {
   // if (ID === openedId ) return;
   const detailsElement = document.querySelector(".details");
-  if (detailsElement) {
-    detailsElement.remove();
-  } 
+  if (detailsElement) detailsElement.remove();
+
   // if (currSubgrpIDPopup != ID || currSubgrpIDPopup != openedId) {
   //   displayAssessState = false;
   //   displaySubgrpState = false;
@@ -511,7 +540,7 @@ const displayGroupDetails = async (ID) => {
   // if (openedId !== ID) {
   //   let openedGroup = document.getElementById(`details-${openedId}`);
   //   displayAssessState = false;
- 
+
   const details = await fetchGroup(ID);
 
   //   const assess = await fetchGroup(ID, "assessments");
@@ -770,7 +799,7 @@ const changePanel = async (ID, parentID) => {
     let lat = (ass.start_coor[0] + ass.end_coor[0]) / 2;
     let lng = (ass.start_coor[1] + ass.end_coor[1]) / 2;
     assessContent.innerHTML += `
-        <h6 id="assess-${ass.id}" class="assess" onclick="displayMarkersDetails(${ass.id}, ${lat}, ${lng});">Assessment ${index}</h6>
+        <h6 id="assess-${ass.id}" class="assess" onclick="handleAssessClick(${ass.id}, ${lat}, ${lng});">Assessment ${index}</h6>
       `;
     mark = markers[`assID-${ass.id}`];
     focus.push(mark);
@@ -814,10 +843,6 @@ const closeMarkerDetails = async () => {
     setTimeout(() => {
       target.remove();
     }, 300);
-          centerGIS.classList.remove("block");
-          centerGIS.classList.add("hidden");
-          sideGIS.classList.remove("hidden");
-          sideGIS.classList.add("block");
   }
 };
 
@@ -840,7 +865,190 @@ const closeGroupDetails = async (ID, animate = false) => {
   // document.getElementById(`group-${ID}`).classList.remove("selected");
 };
 
-/----------------------------------------/
+
+// const displayGroupAssessments = async (ID) => {
+//   displayAssessState = !displayAssessState;
+//   const displayAssessElement = document.getElementById(`displayAssess-${ID}`);
+
+//   if (displayAssessState) {
+//     displayAssessElement.innerHTML = "";
+
+//     const key = `groupAss-${ID}`;
+//     let index = 0;
+//     assessGroup[key].forEach(() => {
+//       index++;
+//       displayAssessElement.innerHTML += `
+//       <div class="detailed-info" onclick="displayAssessCracks(${index - 1})">
+//         <span class="flex gap-[15px] items-center">
+//         <img src="/img/length.png" alt="" />
+//         <a><p>Assessment ${index}</p></a>
+//         </span>
+//       </div>
+//     `;
+//     });
+//     return;
+//   }
+//   displayAssessElement.innerHTML = "";
+// };
+
+// const displayAssessCracks = async (index) => {
+//   markerArr[index].fire("click");
+// };
+
+// const displayGroupSubgroups = async (ID) => {
+//   console.log("Z", assessGroup);
+//   displaySubgrpState = !displaySubgrpState;
+
+//   const displaySubgrpElement = document.getElementById(`displaySubgrp-${ID}`);
+
+//   let subgroups = await fetchGroup(ID, "children");
+//   subgroups = subgroups.children;
+//   console.log("sub", subgroups);
+
+//   if (displaySubgrpState) {
+//     displaySubgrpElement.innerHTML = "";
+
+//     subgroups.forEach((subgrp) => {
+//       displaySubgrpElement.innerHTML += `
+//       <div class="detailed-info" onclick="goForward(${subgrp.id})">
+//         <span class="flex gap-[15px] items-center">
+//         <img src="/img/length.png" alt="" />
+//         <a><p>${subgrp.name}</p></a>
+//         </span>
+//       </div>
+//     `;
+//     });
+//     return;
+//   }
+
+//   displaySubgrpElement.innerHTML = "";
+// };
+
+// const goForward = async (ID) => {
+//   if (currSubgrpIDPopup != ID || currSubgrpIDPopup != openedId) {
+//     displayAssessState = false;
+//     displaySubgrpState = false;
+
+//     currSubgrpIDPopup = ID;
+//     currSubgrpParentIDPopup = 0;
+//   }
+//   let subPopup = document.getElementById("subPopup");
+
+//   const group = await fetchGroup(ID);
+//   const assess = await fetchGroup(ID, "assessments");
+
+//   currSubgrpParentIDPopup = group.parent_id;
+
+//   removeMarker(assessGroup[`groupAss-${group.parent_id}`]);
+//   addMarker(assessGroup[`groupAss-${group.parent_id}`]);
+
+//   const key = `groupAss-${ID}`;
+//   assessGroup[key] = assess.assessments;
+//   addMarker(assessGroup[key], "yellow", (popup = true));
+//   let coords = [];
+//   assessGroup[key].forEach((ass) => {
+//     coords.push(ass.start_coor);
+//   });
+//   zoomToPoints(coords);
+
+//   console.log("ID", ID);
+//   console.log("ParentID", group.parent_id);
+
+//   console.log("currID", ID);
+//   console.log("currParentID", group.parent_id);
+
+//   const currSubgrpPopup = document.getElementById("subgroupPopup");
+//   if (currSubgrpPopup) currSubgrpPopup.remove();
+//   subPopup.innerHTML += `
+//           <div id="subgroupPopup" class="absolute h-full w-full left-0 bottom-0 bg-light z-40 overflow-y-scroll">
+//             <span class="bg-primary pr-8 flex justify-between items-center" id="toggle-${
+//               group.id
+//             }">
+//               <span class="pin_loc bg-primary flex gap-1 items-center py-4 allindent cursor-pointer border-y-[1px]">
+//                   <img src="/img/pin-loc.png" alt="" />
+//                   <p>${group.name}</p>
+//               </span>
+//               <span id="subGrpCloseBtn" class="text-4xl">
+//                   <a onclick="closeSubgrpDetails(${ID}, ${
+//     group.parent_id
+//   })">×</a>
+//               </span>
+//             </span>
+
+//             <div class="summaryDetailed grid gap-5 open" id="details-${
+//               group.id
+//             }">
+//               <div>
+//                 <p class="font-bold detailed-info border-t-2">Detailed Information</p>
+//                 <div>
+//                   <div class="detailed-info">
+//                     <span class="flex gap-[15px] items-center">
+//                     <img src="/img/length.png" alt="">
+//                     <p class="font-bold">Length of Road Monitored:</p>
+//                     </span>
+//                     <p class="pl-[56px]">${group.n_assess * 5} meters</p>
+//                   </div>
+//                   <div class="detailed-info">
+//                       <span class="flex gap-[15px] items-center">
+//                       <img src="/img/lanes.png" alt="">
+//                       <p class="font-bold">Number of Assessments:</p>
+//                       </span>
+//                       <p class="pl-[56px]">${group.n_assess} assessments</p>
+//                   </div>
+//                   <div class="detailed-info">
+//                       <span class="flex gap-[15px] items-center">
+//                       <img src="/img/cracks-detected.png" alt="" />
+//                       <p class="font-bold">Types of Cracks Detected:</p>
+//                       </span>
+//                       <span class="grid gap-2">
+//                       <p class="pl-[56px]">Transverse Cracks (${
+//                         group.n_cracks.trans
+//                       })</p>
+//                       <p class="pl-[56px]">Longitudinal Cracks (${
+//                         group.n_cracks.longi
+//                       })</p>
+//                       <p class="pl-[56px]">Multiple Cracks (${
+//                         group.n_cracks.multi
+//                       })</p>
+//                       </span>
+//                   </div>
+//                   <div class="detailed-info">
+//                       <span class="flex gap-[15px] items-center">
+//                       <img src="/img/total-crack.png" alt="" />
+//                       <p class="font-bold">Total Number of Cracks:</p>
+//                       </span>
+//                       <p class="pl-[56px]">${
+//                         group.n_cracks.trans +
+//                         group.n_cracks.longi +
+//                         group.n_cracks.multi
+//                       }  cracks</p>
+//                   </div>
+//                   <div class="detailed-info">
+//                       <span class="flex gap-[15px] items-center">
+//                       <img src="/img/date.png" alt="" />
+//                       <p class="font-bold">Date Last Updated:</p>
+//                       </span>
+//                       <p class="pl-[56px]">${group.date}</p>
+//                   </div>
+//                 </div>
+//               </div>
+//               <div>
+//                 <a><p class="font-bold detailed-info border-t-2" onclick="displayGroupAssessments(${
+//                   group.id
+//                 })">&#43; Assessments</p></a>
+//                 <div id="displayAssess-${group.id}"></div>
+//               </div>
+//               <div>
+//                 <a><p class="font-bold detailed-info border-t-2" onclick="displayGroupSubgroups(${
+//                   group.id
+//                 })">&#43; Subgroups</p></a>
+//                 <div id="displaySubgrp-${group.id}"></div>
+//               </div>
+//             </div>
+//           </div>
+//         `;
+// };
+
 const closeSubgrpDetails = async (ID, parentID, all = false) => {
   closeAssessmentDetails();
   removeMarker(assessGroup[`groupAss-${ID}`]);
@@ -1120,13 +1328,7 @@ async function generateAssessments(data) {
 // displayGroupLevel(selectedGroup);
 
 map.on("click", () => {
-  if (openedMarkId) {
-    closeMarkerDetails();
-     centerGIS.classList.remove("block");
-     centerGIS.classList.add("hidden");
-     sideGIS.classList.remove("hidden");
-     sideGIS.classList.add("block");
-  }
+  if (openedMarkId) closeMarkerDetails();
 });
 
 init();

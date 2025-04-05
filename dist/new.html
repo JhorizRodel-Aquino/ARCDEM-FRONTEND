@@ -3,7 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="ARCDEM - Automated Road Crack Detection and Mapping System" />
+    <meta property="og:description" content="Design project by: Aquino, de Guzman, Emprese, and Vallente" />
+    <meta property="og:image" content="https://arcdem.site/img/thumbnail.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://arcdem.site/" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ARCDEM - Automated Road Crack Detection and Mapping System" />
+    <meta name="twitter:description" content="Design project by: Aquino, de Guzman, Emprese, and Vallente" />
+    <meta name="twitter:image" content="https://arcdem.site/img/thumbnail.png" />
+
     <title>ARCDEM</title>
+
     <link href="./output.css" rel="stylesheet" />
     <link
       rel="stylesheet"
@@ -16,30 +31,29 @@
       href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
     />
   </head>
+
   <body class="bg-light h-dvh">
     <!-- HEADER -->
     <header
       class="header bg-light lg:py-6 md:py-5 sm:py-4 py-3 lg:px-10 md:px-7 px-5 absolute w-full top-0 left-0 z-50"
     >
-      <div class="Container">
-        <div class="header__wrapper flex justify-between items-center">
-          <div
-            class="header__name flex justify-between items-center sm:gap-4 lg:gap-10"
-          >
-            <h1 class="logo text-primary">ARCDEM</h1>
-            <h3 class="hidden sm:block md:text-lg sm:text-sm">
-              Automated Road Crack Detection and Mapping System
-            </h3>
-          </div>
-          <nav class="flex justify-center items-center">
-            <a href=""
-              ><img
-                src="/img/add-icon.png"
-                alt="Admin"
-                class="w-7 md:w-10 lg:w-12"
-            /></a>
-          </nav>
+      <div class="header__wrapper flex justify-between items-center">
+        <div
+          class="header__name flex justify-between items-center sm:gap-4 lg:gap-10"
+        >
+          <h1 class="logo text-primary">ARCDEM</h1>
+          <h3 class="hidden sm:block md:text-lg sm:text-sm">
+            Automated Road Crack Detection and Mapping System
+          </h3>
         </div>
+        <nav class="flex justify-center items-center">
+          <a href=""
+            ><img
+              src="/img/add-icon.png"
+              alt="Admin"
+              class="w-7 md:w-10 lg:w-12"
+          /></a>
+        </nav>
       </div>
     </header>
 
@@ -52,7 +66,11 @@
           <div
             class="top absolute z-[35] w-full top-0 left-0 flex px-6 sm:px-8 md:px-10 lg:px-14 bg-primary text-light justify-between items-center"
           >
-            <h2>GIS System</h2>
+            <span class="flex">
+              <span class="w-[75dvw]  sm:block sm:max-w-[310px] sm:w-[45dvw] md:block md:w-[40dvw] lg:block lg:w-[35dvw] md:max-w-[410px] lg:max-w-[510px]"><h2 id="sideGIS">GIS System</h2></span>
+              <span><h2 class="hidden" id="centerGIS">GIS System</h2></span>
+            </span>
+            
           </div>
           <div id="map" class="w-full h-full z-10"></div>
         </div>
@@ -134,7 +152,7 @@
         <!-- <aside class="assessDetails details">
           <div
             id="details__toggle"
-            class="details__toggle"
+            class="details__toggle z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out"
           >
             &lsaquo;
           </div>
@@ -150,7 +168,9 @@
             </div>
           </div>
 
-          <span class="yellow-part bg-primary flex justify-between items-center">
+          <span
+            class="yellow-part bg-primary flex justify-between items-center"
+          >
             <span class="flex gap-1 items-center py-4">
               <img src="/img/pin-loc.png" alt="" />
               <span id="address" class="">

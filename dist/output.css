@@ -448,7 +448,7 @@ video {
 
 body{
   overflow-x: hidden;
-  font-family: Inter;
+  font-family: Inter, sans-serif;
   color: rgb(0 0 0 / 0.8);
 }
 
@@ -1061,6 +1061,10 @@ a{
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.groupsList--content .assess:hover{
+  background-color: rgb(255 255 255 / 0.15);
+}
+
 .groupsList h6{
   margin-left: 0.75rem;
   margin-right: 0.75rem;
@@ -1086,7 +1090,17 @@ a{
   background-color: rgb(210 183 70 / var(--tw-bg-opacity));
 }
 
+.groupsList h6.selected:hover{
+  --tw-bg-opacity: 1;
+  background-color: rgb(210 183 70 / var(--tw-bg-opacity));
+}
+
 .groupsList h6.\!selected{
+  --tw-bg-opacity: 1;
+  background-color: rgb(210 183 70 / var(--tw-bg-opacity));
+}
+
+.groupsList h6.\!selected:hover{
   --tw-bg-opacity: 1;
   background-color: rgb(210 183 70 / var(--tw-bg-opacity));
 }
@@ -1199,6 +1213,12 @@ a{
   width: 100%;
 }
 
+@media (min-width: 30rem){
+  .container{
+    max-width: 30rem;
+  }
+}
+
 @media (min-width: 640px){
   .container{
     max-width: 640px;
@@ -1305,6 +1325,10 @@ a{
   z-index: 35;
 }
 
+.block{
+  display: block;
+}
+
 .inline{
   display: inline;
 }
@@ -1371,6 +1395,10 @@ a{
 
 .w-\[565px\]{
   width: 565px;
+}
+
+.w-\[75dvw\]{
+  width: 75dvw;
 }
 
 .w-\[8rem\]{
@@ -1682,6 +1710,10 @@ a{
   font-weight: 700;
 }
 
+.capitalize{
+  text-transform: capitalize;
+}
+
 .leading-none{
   line-height: 1;
 }
@@ -1705,6 +1737,10 @@ a{
   opacity: 0.3;
 }
 
+.opacity-0{
+  opacity: 0;
+}
+
 .outline-none{
   outline: 2px solid transparent;
   outline-offset: 2px;
@@ -1725,6 +1761,14 @@ a{
 
   .sm\:hidden{
     display: none;
+  }
+
+  .sm\:w-\[45dvw\]{
+    width: 45dvw;
+  }
+
+  .sm\:max-w-\[310px\]{
+    max-width: 310px;
   }
 
   .sm\:grid-cols-\[auto_auto\]{
@@ -1756,8 +1800,20 @@ a{
 }
 
 @media (min-width: 768px){
+  .md\:block{
+    display: block;
+  }
+
   .md\:w-10{
     width: 2.5rem;
+  }
+
+  .md\:w-\[40dvw\]{
+    width: 40dvw;
+  }
+
+  .md\:max-w-\[410px\]{
+    max-width: 410px;
   }
 
   .md\:px-10{
@@ -1786,8 +1842,20 @@ a{
 }
 
 @media (min-width: 1024px){
+  .lg\:block{
+    display: block;
+  }
+
   .lg\:w-12{
     width: 3rem;
+  }
+
+  .lg\:w-\[35dvw\]{
+    width: 35dvw;
+  }
+
+  .lg\:max-w-\[510px\]{
+    max-width: 510px;
   }
 
   .lg\:gap-10{

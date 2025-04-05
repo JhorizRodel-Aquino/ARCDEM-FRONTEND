@@ -173,15 +173,24 @@
     @apply translate-y-0 duration-300 static opacity-100 ease-in-out;
   }
 
+   .groupsList--content .assess {
+    @apply hover:bg-light/15;
+  }
+
   .groupsList h6 {
     @apply cursor-pointer rounded-md mx-3 px-2 py-2 my-1 hover:bg-primary duration-200 ease-in-out;
   }
 
   .groupsList h6.selected {
-    @apply bg-primary;
+    @apply bg-primary hover:bg-primary;
   }
 
   /* .details__toggle {
     @apply  z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out;
   } */
+
+
+
+
+
 }
