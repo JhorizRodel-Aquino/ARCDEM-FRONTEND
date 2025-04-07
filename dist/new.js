@@ -18,8 +18,6 @@ let currSubgrpParentIDPopup = 0;
 let markerArr = [];
 let assessGroup = {};
 let markers = {};
-const centerGIS = document.getElementById("centerGIS");
-const sideGIS = document.getElementById("sideGIS");
 const main = document.getElementById("main");
 // -------------------------------------------------------------------------
 
@@ -121,7 +119,6 @@ googleHybrid = L.tileLayer(
   }
 );
 
-
 // Layer Control
 let baseLayers = {
   OpenStreetMap: osm,
@@ -166,29 +163,30 @@ const fetchGroup = async (param, relation = "") => {
   }
 };
 
+
 const fetchAncestors = async (ID) => {
-   try {
-     let link = `${url}/assessment/${ID}/address`;
+  try {
+    let link = `${url}/assessment/${ID}/address`;
 
-     const response = await fetch(link, {
-       method: "GET",
-       headers: {
-         "Content-Type": "application/json",
-       },
-     });
+    const response = await fetch(link, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-     if (!response.ok) {
-       throw new Error(`HTTP error! Status: ${response.status}`);
-     }
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
 
-     const data = await response.json();
-     console.log("Fetched ancestor:", data);
-     return data;
-   } catch (error) {
-     console.error("Error fetching ancestor:", error);
-     return [];
-   }
-}
+    const data = await response.json();
+    console.log("Fetched ancestor:", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching ancestor:", error);
+    return [];
+  }
+};
 
 const fetchCracks = async () => {
   try {
@@ -268,23 +266,16 @@ const init = async () => {
 const displayMarkers = async () => {
   const assessments = await fetchAssessments();
 
-
   assessments.forEach((assessment) => {
     let lat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
     let lng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
 
-    let marker = L.marker([lat, lng])
-      .addTo(map)
-      .bindPopup("Opened Assessment");
+    let marker = L.marker([lat, lng]).addTo(map).bindPopup("Opened Assessment");
 
     markers[`assID-${assessment.id}`] = marker;
     marker.on("click", (e) => {
       e.originalEvent.stopPropagation();
       displayMarkersDetails(assessment.id, lat, lng);
-      centerGIS.classList.remove("hidden");
-      centerGIS.classList.add("block");
-      sideGIS.classList.remove("block");
-      sideGIS.classList.add("hidden");
     });
   });
 };
@@ -314,28 +305,28 @@ const displayMarkersDetails = async (ID, lat, lng) => {
           </div>
 
           <div>
-            <div
-              class="top flex justify-between z-50 w-full items-center top-0 left-0 allindent pr-8 bg-dark text-light gap-5"
-            >
+            <div class="top flex justify-between z-50 w-full items-center top-0 left-0 allindent pr-8 bg-dark text-light gap-5">
               <h5 class="inline" id="coordinates">
-                <span>${lat.toFixed(6)},</span> <span>${lng.toFixed(6)}</span>
+                <span>
+                  ${Math.abs(lat).toFixed(6)}&deg; ${lat >= 0 ? "N" : "S"},
+                </span>
+                <span>
+                  ${Math.abs(lng).toFixed(6)}&deg; ${lng >= 0 ? "E" : "W"}
+                </span>
               </h5>
               <h2 class="opacity-0">.</h2>
               <h5 class="inline">Road: 5m</h5>
-              
             </div>
           </div>
 
-          <span
-            class="yellow-part bg-primary flex justify-between items-center"
-           >
-            <span class="flex gap-1 items-center py-4">
-              <img src="img/pin-loc.png" alt="" />
-              <span id="address" class="">
+          <span class="yellow-part bg-primary flex justify-between items-center">
+            <span class="flex gap-1 items-center py-3 overflow-x-hidden">
+              <img src="/img/pin-loc.png" class="w-[15px] h-[15px] md:w-[20px] md:h-[20px] lg:w-[30px] lg:h-[30px]" alt="" />
+              <span id="address" ">
                
               </span>
             </span>
-            <a class="text-4xl" onclick="closeMarkerDetails()">×</a>
+            <a class="text-2xl sm:text-2xl md:text-3xl lg:text-4xl" onclick="closeMarkerDetails()">×</a>
           </span>
 
           <div id="crackDetails" class="overflow-y-auto">
@@ -345,20 +336,53 @@ const displayMarkersDetails = async (ID, lat, lng) => {
   `
   );
 
-    let address = document.querySelector("#address");
-    const ancestors = await fetchAncestors(ID);
-    console.log("ID", ancestors);
+  let address = document.querySelector("#address");
+  const ancestors = await fetchAncestors(ID);
+  console.log("ID", ancestors);
 
-    ancestors.forEach((ancestor) => {
-      address.insertAdjacentHTML(
-        "afterend",
-        `
-      <p class="inline">${ancestor.name} ></p>
-      `
-      );
-    });
+  ancestors.forEach((ancestor, index) => {
+    address.insertAdjacentHTML(
+      "beforeend",
+      `<p class="inline">${index > 0 ? ", " : ""}${ancestor.name}</p>`
+    );
+  });
+
+  document.getElementById("details__toggle").addEventListener("click", () => {
+    document.querySelector(".details").classList.toggle("close");
+    document.querySelector(".details__toggle").classList.toggle("scale-x-[-1]");
+    document.querySelector(".details__toggle").classList.toggle("pl-5");
+    document.querySelector(".details__toggle").classList.toggle("pr-5");
+  });
+
+  const toggleButton = document.getElementById("details__toggle");
+  const detailsPanel = document.querySelector(".details");
+
+  // Function to reset classes when screen reaches 'sm'
+  function resetOnSm(event) {
+    if (event.matches) {
+      detailsPanel.classList.remove("close");
+      toggleButton.classList.remove("scale-x-[-1]", "pl-5", "pr-5");
+      toggleButton.classList.add("pl-5");
+    }
+  }
   let crackDetails = document.getElementById("crackDetails");
   let index = 0;
+
+  const formattedDate = new Date(assessCracks.date)
+    .toLocaleString("en-CA", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+      timeZone: "UTC",
+    })
+    .replace(",", "");
+
+
+  crackDetails.innerHTML += `<p class="crack-info py-2"><span class="font-bold">Date Asssessed: </span>${formattedDate}</p>`;
   assessCracks.cracks.forEach((crack) => {
     crackDetails.innerHTML += `
     <div class="crack-info grid gap-2">
@@ -370,31 +394,32 @@ const displayMarkersDetails = async (ID, lat, lng) => {
         crack.crack_severity
       }</p>
       <p><span class="font-bold">Length: </span>${crack.crack_length}m</p>
-      <p id="crack-${index}-type"></p>
+      <p id="crack-${index}-width"</p>
       <p id="crack-${index}-affect"></p>
       <p><span class="font-bold">Recommended Solution: </span>Asphalt</p>
     </div>`;
 
-    const type = document.getElementById(`crack-${index}-type`);
+    const type = document.getElementById(`crack-${index}-width`);
     const affected = document.getElementById(`crack-${index}-affect`);
 
     if (crack.crack_type.toLowerCase() === "multiple") {
       affected.innerHTML = `<span class="font-bold">Affected Area: </span>${
         crack.crack_width * crack.crack_length
-      }m`;
+      }m<sup>2</sup>`;
       type.innerHTML = `<span class="font-bold">Width: </span>${crack.crack_width}m`;
     } else if (
       crack.crack_type.toLowerCase() === "longitudinal" ||
       crack.crack_type.toLowerCase() === "transverse"
     ) {
-      type.remove();
       affected.remove();
     }
 
     index++;
   });
+
   let filename = `${url}/image/${assessCracks.filename}.jpg`;
-  crackDetails.innerHTML += `<img src="${filename}" class="object-fit p-5" />`;
+  crackDetails.innerHTML += `
+  <img src="${filename}" class="object-fit p-5" />`;
 };
 
 const handleAssessClick = (ID, lat, lng) => {
@@ -404,7 +429,7 @@ const handleAssessClick = (ID, lat, lng) => {
   if (marker) {
     marker.openPopup(); // ✅ show the popup when h6 is clicked
   }
-}
+};
 
 const resetZoom = () => {
   map.setView([12.8797, 121.774], 6); // Center of the Philippines, Zoom level 6
@@ -499,7 +524,7 @@ const displayGroupDetails = async (ID) => {
   const detailsElement = document.querySelector(".details");
   if (detailsElement) {
     detailsElement.remove();
-  } 
+  }
   // if (currSubgrpIDPopup != ID || currSubgrpIDPopup != openedId) {
   //   displayAssessState = false;
   //   displaySubgrpState = false;
@@ -511,8 +536,10 @@ const displayGroupDetails = async (ID) => {
   // if (openedId !== ID) {
   //   let openedGroup = document.getElementById(`details-${openedId}`);
   //   displayAssessState = false;
- 
+
   const details = await fetchGroup(ID);
+  console.log("details", details);
+
 
   //   const assess = await fetchGroup(ID, "assessments");
 
@@ -556,11 +583,12 @@ const displayGroupDetails = async (ID) => {
         id="toggle-2"
       >
         <span class="pin_loc flex gap-1 items-center cursor-pointer">
-          <img src="img/pin-loc.png" alt="" />
+          <img src="/img/pin-loc.png" alt="" class="w-[15px] h-[15px] md:w-[20px] md:h-[20px] lg:w-[30px] lg:h-[30px]"/>
           <p>${details.name}</p>
         </span>
-        <a class="text-4xl" onclick="closeGroupDetails(${ID}, ${true})">×</a>
+        <a class="text-2xl sm:text-2xl md:text-3xl lg:text-4xl" onclick="closeGroupDetails(${ID}, ${true})">×</a>
       </div>
+      <button id="downloadSummaryBtn" onclick="downloadSummary(${ID})">Download Summary PDF</button>
 
       <div class="detailedInfo h-full overflow-y-auto" id="details-2">
         <p class="font-bold detailed-info border-t-2">
@@ -569,41 +597,41 @@ const displayGroupDetails = async (ID) => {
         <div class="detailedInfos__wrapper">
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="img/length.png" alt="" />
+              <img src="/img/length.png" class="" alt="" />
               <p class="font-bold">Length of Road Monitored:</p>
             </span>
-            <p class="pl-[56px]">${details.n_assess * 5} meters</p>
+            <p class="detailed_assess">${details.n_assess * 5} meters</p>
           </div>
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="img/lanes.png" alt="" />
+              <img src="/img/lanes.png" alt="" />
               <p class="font-bold">Number of Assessments:</p>
             </span>
-            <p class="pl-[56px]">${details.n_assess} assessments</p>
+            <p class="detailed_assess">${details.n_assess} assessments</p>
           </div>
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="img/cracks-detected.png" alt="" />
+              <img src="/img/cracks-detected.png" alt="" />
               <p class="font-bold">Types of Cracks Detected:</p>
             </span>
             <span class="grid gap-2">
-              <p class="pl-[56px]">Transverse Cracks (${
+              <p class="detailed_assess">Transverse Cracks (${
                 details.n_cracks.trans
               })</p>
-              <p class="pl-[56px]">Longitudinal Cracks (${
+              <p class="detailed_assess">Longitudinal Cracks (${
                 details.n_cracks.longi
               })</p>
-              <p class="pl-[56px]">Multiple Cracks (${
+              <p class="detailed_assess">Multiple Cracks (${
                 details.n_cracks.multi
               })</p>
             </span>
           </div>
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="img/total-crack.png" alt="" />
+              <img src="/img/total-crack.png" alt="" />
               <p class="font-bold">Total Number of Cracks:</p>
             </span>
-            <p class="pl-[56px]">${
+            <p class="detailed_assess">${
               details.n_cracks.trans +
               details.n_cracks.longi +
               details.n_cracks.multi
@@ -611,16 +639,17 @@ const displayGroupDetails = async (ID) => {
           </div>
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
-              <img src="img/date.png" alt="" />
+              <img src="/img/date.png" alt="" />
               <p class="font-bold">Date Last Updated:</p>
             </span>
-            <p class="pl-[56px]">${details.date}</p>
+            <p class="detailed_assess">${details.date}</p>
           </div>
         </div>
       </div>
     </aside>
   `
   );
+
 
   document.getElementById("details__toggle").addEventListener("click", () => {
     document.querySelector(".details").classList.toggle("close");
@@ -647,6 +676,7 @@ const displayGroupDetails = async (ID) => {
   smMediaQuery.addEventListener("change", resetOnSm);
 
   if (ID !== openedId) changePanel(ID, details.parent_id);
+  console.log("parent_id", details.parent_id);
   openedId = ID;
 
   //   let expanded = document.getElementById(`toggle-${ID}`);
@@ -680,6 +710,186 @@ const displayGroupDetails = async (ID) => {
   // }
 };
 
+// const capitalizeFirstLetter = (str) => {
+//   if (!str) return str;
+//   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+// };
+const downloadSummary = async (ID) => {
+  const summary = await fetchGroup(ID, "summary");
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const tableColumn = [
+    "Assessment Number",
+    "Coordinates",
+    "Crack Number",
+    "Crack Information",
+  ];
+  const tableRows = [];
+
+  summary.assessments.forEach((assessment, index) => {
+    const [startLat, startLng] = Array.isArray(assessment.start_coor)
+      ? assessment.start_coor
+      : assessment.start_coor.split(",").map(Number);
+    const [endLat, endLng] = Array.isArray(assessment.end_coor)
+      ? assessment.end_coor
+      : assessment.end_coor.split(",").map(Number);
+    const midLat = (startLat + endLat) / 2;
+    const midLng = (startLng + endLng) / 2;
+    const midCoordinates = `${midLat.toFixed(6)}, ${midLng.toFixed(6)}`;
+
+    // For each assessment, we set the initial row with the assessment number and coordinates
+    assessment.cracks.forEach((crack, crackIndex) => {
+      const assessmentRow = [
+        crackIndex === 0 ? `Assessment #${index + 1}` : "", // Only show assessment number for the first crack
+        crackIndex === 0 ? midCoordinates : "", // Only show coordinates for the first crack
+        `Crack #${crackIndex + 1}`,
+        `Type: ${capitalizeFirstLetter(
+          crack.crack_type
+        )}\nSeverity: ${capitalizeFirstLetter(crack.crack_severity)}\nLength: ${
+          crack.crack_length
+        }m\nWidth: ${
+          crack.crack_width == null ? "0.5" : `${crack.crack_width}`
+        }m`,
+      ];
+      tableRows.push(assessmentRow);
+    });
+  });
+
+  doc.setFontSize(18);
+  doc.text(
+    `Summary Report - ${summary.address}`,
+    105,
+    20,
+    null,
+    null,
+    "center"
+  );
+
+  doc.autoTable({
+    head: [tableColumn],
+    body: tableRows,
+    startY: 30,
+    theme: "grid",
+    headStyles: {
+      fillColor: [210, 183, 70],
+      textColor: [0, 0, 0],
+      fontStyle: "bold",
+    },
+    styles: {
+      fontSize: 12,
+      textColor: [0, 0, 0],
+      cellPadding: 5,
+    },
+  });
+
+  // 3-column image layout after table
+  let startY = doc.lastAutoTable.finalY + 10;
+  let x = 10;
+  let y = startY;
+  let column = 0;
+  const imageWidth = 50;
+  const imageHeight = 95;
+  const padding = 10;
+
+  for (let i = 0; i < summary.assessments.length; i++) {
+    const assessment = summary.assessments[i];
+    const imageUrl = `${url}/image/${assessment.filename}.jpg`;
+    const label = `Assessment #${i + 1}`;
+
+    try {
+      const imgData = await getImageBase64(imageUrl);
+
+      // Check if there's enough space for the image
+      const remainingSpace = doc.internal.pageSize.height - y - 10; // 10px padding
+
+      // If there's not enough space left, add a new page
+      if (remainingSpace < imageHeight + 16) {
+        doc.addPage();
+        x = 10;
+        y = 10;
+        column = 0;
+      }
+
+      // Draw image
+      doc.addImage(imgData, "JPEG", x, y, imageWidth, imageHeight);
+
+      // Draw label below image
+      doc.setFontSize(8);
+      doc.text(label, x, y + imageHeight + 4);
+
+      column++;
+      x += imageWidth + padding;
+
+      // If 3 images per row, move to next row
+      if (column === 3) {
+        column = 0;
+        x = 10;
+        y += imageHeight + 16 + padding;
+      }
+    } catch (err) {
+      doc.setFontSize(10);
+      doc.text("Image failed to load", x, y);
+      column++;
+      x += imageWidth + padding;
+
+      if (column === 3) {
+        column = 0;
+        x = 10;
+        y += imageHeight + 16 + padding;
+      }
+
+      if (y > 250) {
+        doc.addPage();
+        x = 10;
+        y = 10;
+        column = 0;
+      }
+    }
+  }
+
+  doc.save(`Summary-${summary.address}-${ID}.pdf`);
+};
+
+// Helper to fetch image and convert to Base64
+const getImageBase64 = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function () {
+      const canvas = document.createElement("canvas");
+      canvas.width = this.naturalWidth;
+      canvas.height = this.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(this, 0, 0);
+      resolve(canvas.toDataURL("image/jpeg"));
+    };
+    img.onerror = function () {
+      reject(new Error("Failed to load image"));
+    };
+    img.src = url;
+  });
+};
+
+// Utility to capitalize first letter
+const capitalizeFirstLetter = (string) =>
+  string.charAt(0).toUpperCase() + string.slice(1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const resetMarkerColors = () => {
   const marks = Object.values(markers); // Assuming 'markers' is an object of marker instances
   marks.forEach((mark) => {
@@ -694,6 +904,7 @@ const changePanel = async (ID, parentID) => {
   document.querySelector(".groupsPanel").remove();
 
   let backFunc = `displayGroupDetails(${parentID})`;
+  console.log("parent", parentID);
   if (!parentID) backFunc = `closeGroupDetails(${openedId}, ${true})`;
   main.insertAdjacentHTML(
     "afterend",
@@ -814,10 +1025,6 @@ const closeMarkerDetails = async () => {
     setTimeout(() => {
       target.remove();
     }, 300);
-          centerGIS.classList.remove("block");
-          centerGIS.classList.add("hidden");
-          sideGIS.classList.remove("hidden");
-          sideGIS.classList.add("block");
   }
 };
 
@@ -840,7 +1047,16 @@ const closeGroupDetails = async (ID, animate = false) => {
   // document.getElementById(`group-${ID}`).classList.remove("selected");
 };
 
-/----------------------------------------/
+map.on("click", () => {
+  if (openedMarkId) {
+    closeMarkerDetails();
+  }
+});
+
+init();
+
+
+/----------------------------------------/;
 const closeSubgrpDetails = async (ID, parentID, all = false) => {
   closeAssessmentDetails();
   removeMarker(assessGroup[`groupAss-${ID}`]);
@@ -1119,14 +1335,3 @@ async function generateAssessments(data) {
 
 // displayGroupLevel(selectedGroup);
 
-map.on("click", () => {
-  if (openedMarkId) {
-    closeMarkerDetails();
-     centerGIS.classList.remove("block");
-     centerGIS.classList.add("hidden");
-     sideGIS.classList.remove("hidden");
-     sideGIS.classList.add("block");
-  }
-});
-
-init();

@@ -39,27 +39,27 @@
     @apply font-extrabold lg:text-5xl md:text-4xl text-2xl;
   }
   h2 {
-    @apply font-bold lg:text-3xl md:text-2xl text-lg;
+    @apply font-bold lg:text-2xl md:text-xl text-lg;
   }
   h3 {
-    @apply italic lg:text-2xl md:text-xl text-sm;
+    @apply italic lg:text-xl md:text-lg text-sm;
   }
   h4,
   .h4 {
-    @apply lg:text-lg md:text-base text-xs;
+    @apply lg:text-base md:text-sm text-xs;
   }
   h5,
   .h5 {
-    @apply lg:text-base md:text-sm text-xs;
+    @apply lg:text-sm md:text-xs text-xs;
   }
   h6,
   .h6,
   .adjust {
-    @apply lg:text-sm text-xs;
+    @apply lg:text-xs text-xs;
   }
   p,
   .p {
-    @apply lg:text-xl md:text-lg text-sm;
+    @apply lg:text-lg md:text-base text-xs;
   }
 
   a {
@@ -72,6 +72,14 @@
 
   .detailed-info {
     @apply py-[10px] allindent border-b-2 pr-5;
+  }
+
+  .detailed-info img{
+    @apply w-[25px] h-[25px] md:w-[30px] md:h-[30px] lg:w-[40px] lg:h-[40px];
+  }
+
+  .detailed_assess {
+    @apply pl-[40px] lg:pl-[56px] md:pl-[48px];
   }
 
   .crack-info {
@@ -138,7 +146,7 @@
   }
 
   .details {
-    @apply animate-moveInLeft duration-300 ease-in-out w-[75dvw] sm:w-[45dvw] md:w-[40dvw] lg:w-[35dvw] sm:max-w-[310px] md:max-w-[410px] lg:max-w-[510px] h-full bg-light flex flex-col border-r-[8px] border-gray-200 absolute z-50 top-0 left-0;
+    @apply animate-moveInLeft duration-300 ease-in-out w-[65dvw] sm:w-[45dvw] md:w-[40dvw] lg:w-[35dvw] sm:max-w-[310px] md:max-w-[410px] lg:max-w-[510px] h-full bg-light flex flex-col border-r-[8px] border-gray-200 absolute z-40 top-0 left-0;
   }
 
   .details.close {
@@ -183,6 +191,10 @@
 
   .groupsList h6.selected {
     @apply bg-primary hover:bg-primary;
+  }
+
+  .sideGIS.open{
+    @apply pl-[335px] md:pl-[410px] lg:pl-[510px]
   }
 
   /* .details__toggle {
