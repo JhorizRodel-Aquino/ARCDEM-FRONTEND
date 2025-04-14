@@ -74,7 +74,7 @@
     @apply py-[10px] allindent border-b-2 pr-5;
   }
 
-  .detailed-info img{
+  .detailedInfos__wrapper img{
     @apply w-[25px] h-[25px] md:w-[30px] md:h-[30px] lg:w-[40px] lg:h-[40px];
   }
 
@@ -194,14 +194,17 @@
   }
 
   .sideGIS.open{
-    @apply pl-[335px] md:pl-[410px] lg:pl-[510px]
+    @apply pl-[335px] md:pl-[410px] lg:pl-[510px] transition-all duration-300 ease-in-out;
   }
 
   /* .details__toggle {
     @apply  z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out;
   } */
 
-
+/* ------------------------loginpage------------------- */
+input {
+  @apply bg-light border-black border-[1px] rounded-lg text-2xl
+}
 
 
 

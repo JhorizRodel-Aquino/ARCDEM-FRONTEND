@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      property="og:title"
+      content="ARCDEM - Automated Road Crack Detection and Mapping System"
+    />
+    <meta
+      property="og:description"
+      content="Design project by: Aquino, de Guzman, Emprese, and Vallente"
+    />
+    <meta property="og:image" content="https://arcdem.site/img/thumbnail.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://arcdem.site/" />
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="ARCDEM - Automated Road Crack Detection and Mapping System"
+    />
+    <meta
+      name="twitter:description"
+      content="Design project by: Aquino, de Guzman, Emprese, and Vallente"
+    />
+    <meta
+      name="twitter:image"
+      content="https://arcdem.site/img/thumbnail.png"
+    />
+
+    <title>ARCDEM</title>
+
+    <link href="./output.css" rel="stylesheet" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+    />
+  </head>
+
+  <body class="bg-light h-dvh">
+    <!-- HEADER -->
+    <header
+      class="header bg-light lg:py-6 md:py-5 sm:py-4 py-3 lg:px-10 md:px-7 px-5 absolute w-full top-0 left-0 z-50"
+    >
+      <div class="header__wrapper flex justify-between items-center">
+        <div
+          class="header__name flex justify-between items-center sm:gap-4 lg:gap-10"
+        >
+          <h1 class="logo text-primary">ARCDEM</h1>
+          <h3 class="hidden sm:block md:text-lg sm:text-sm">
+            Automated Road Crack Detection and Mapping System
+          </h3>
+        </div>
+        <nav class="flex justify-center items-center">
+          <a href=""
+            ><img
+              src="/img/add-icon.png"
+              alt="Admin"
+              class="w-7 md:w-10 lg:w-12"
+          /></a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <section
+      class="dashboard h-full bg-primary lg:pt-[95px] md:pt-[79px] sm:pt-[64px] pt-[56px]"
+    >
+      <div class="container h-full">
+        <div class="dashboard__wrapper flex h-full w-full">
+          <div class="dashboard__info bg-black h-full w-full"></div>
+          <div class="dashboard__gis h-full w-full p-10">
+            <div class="p-5 bg-white h-full w-full">
+              <div id="map" class="w-full h-full z-10"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.20/jspdf.plugin.autotable.min.js"></script>
+    <script src="admin.js"></script>
+  </body>
+</html>

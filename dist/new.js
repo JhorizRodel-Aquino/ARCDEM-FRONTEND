@@ -19,6 +19,7 @@ let markerArr = [];
 let assessGroup = {};
 let markers = {};
 const main = document.getElementById("main");
+const sideGIS = document.querySelector(".sideGIS");
 // -------------------------------------------------------------------------
 
 document.addEventListener("click", (event) => {
@@ -163,7 +164,6 @@ const fetchGroup = async (param, relation = "") => {
   }
 };
 
-
 const fetchAncestors = async (ID) => {
   try {
     let link = `${url}/assessment/${ID}/address`;
@@ -276,6 +276,7 @@ const displayMarkers = async () => {
     marker.on("click", (e) => {
       e.originalEvent.stopPropagation();
       displayMarkersDetails(assessment.id, lat, lng);
+      marker.openPopup();
     });
   });
 };
@@ -283,6 +284,7 @@ const displayMarkers = async () => {
 const displayMarkersDetails = async (ID, lat, lng) => {
   if (ID === openedMarkId) return;
   openedMarkId = ID;
+  markers[`assID-${ID}`].openPopup();
   const detailsElement = document.querySelector(".details");
   if (detailsElement) detailsElement.remove();
 
@@ -326,7 +328,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
                
               </span>
             </span>
-            <a class="text-2xl sm:text-2xl md:text-3xl lg:text-4xl" onclick="closeMarkerDetails()">×</a>
+            <a class="text-2xl sm:text-2xl md:text-3xl lg:text-4xl" onclick="closeMarkerDetails(${ID})">×</a>
           </span>
 
           <div id="crackDetails" class="overflow-y-auto">
@@ -343,7 +345,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
   ancestors.forEach((ancestor, index) => {
     address.insertAdjacentHTML(
       "beforeend",
-      `<p class="inline">${index > 0 ? ", " : ""}${ancestor.name}</p>`
+      `<p class="inline capitalize">${index > 0 ? ", " : ""}${ancestor.name}</p>`
     );
   });
 
@@ -384,6 +386,20 @@ const displayMarkersDetails = async (ID, lat, lng) => {
 
   crackDetails.innerHTML += `<p class="crack-info py-2"><span class="font-bold">Date Asssessed: </span>${formattedDate}</p>`;
   assessCracks.cracks.forEach((crack) => {
+    let solution;
+    if (
+      crack.crack_type == "transverse" ||
+      (crack.crack_type == "longitudinal" && crack.crack_severity == "narrow")
+    ) {
+      solution = "Grooving and Sealing";
+    } else if (
+      crack.crack_type == "transverse" ||
+      (crack.crack_type == "longitudinal" && crack.crack_severity == "wide")
+    ) {
+      solution = "Stitch Repair";
+    } else {
+      solution = "Reblocking";
+    }
     crackDetails.innerHTML += `
     <div class="crack-info grid gap-2">
       <h3 class="font-bold">Crack ${index + 1}:</h3>
@@ -396,7 +412,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
       <p><span class="font-bold">Length: </span>${crack.crack_length}m</p>
       <p id="crack-${index}-width"</p>
       <p id="crack-${index}-affect"></p>
-      <p><span class="font-bold">Recommended Solution: </span>Asphalt</p>
+      <p><span class="font-bold">Recommended Solution: </span>${solution}</p>
     </div>`;
 
     const type = document.getElementById(`crack-${index}-width`);
@@ -420,6 +436,9 @@ const displayMarkersDetails = async (ID, lat, lng) => {
   let filename = `${url}/image/${assessCracks.filename}.jpg`;
   crackDetails.innerHTML += `
   <img src="${filename}" class="object-fit p-5" />`;
+
+  const sideGIS = document.querySelector(".sideGIS");
+  sideGIS.classList.add("open");
 };
 
 const handleAssessClick = (ID, lat, lng) => {
@@ -500,6 +519,7 @@ const homePanel = async (param, groupID = 0) => {
   // }
   resetMarkerColors();
   resetZoom();
+  sideGIS.classList.remove("open");
 };
 
 const displayGroupLevels = async () => {
@@ -588,12 +608,11 @@ const displayGroupDetails = async (ID) => {
         </span>
         <a class="text-2xl sm:text-2xl md:text-3xl lg:text-4xl" onclick="closeGroupDetails(${ID}, ${true})">×</a>
       </div>
-      <button id="downloadSummaryBtn" onclick="downloadSummary(${ID})">Download Summary PDF</button>
-
       <div class="detailedInfo h-full overflow-y-auto" id="details-2">
-        <p class="font-bold detailed-info border-t-2">
-          Detailed Information
-        </p>
+        <span class="detailed-info border-t-2 flex justify-between">
+            <p class="font-bold  ">Summary Information</p>
+            <button id="downloadSummaryBtn" onclick="downloadSummary(${ID})"><img src="/img/download.png" class="w-[15px] h-[15px] md:w-[20px] md:h-[20px] lg:w-[25px] lg:h-[25px]" alt="" /></button>
+        </span>
         <div class="detailedInfos__wrapper">
           <div class="detailed-info">
             <span class="flex gap-[15px] items-center">
@@ -649,6 +668,7 @@ const displayGroupDetails = async (ID) => {
     </aside>
   `
   );
+  sideGIS.classList.add("open");
 
 
   document.getElementById("details__toggle").addEventListener("click", () => {
@@ -710,10 +730,6 @@ const displayGroupDetails = async (ID) => {
   // }
 };
 
-// const capitalizeFirstLetter = (str) => {
-//   if (!str) return str;
-//   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-// };
 const downloadSummary = async (ID) => {
   const summary = await fetchGroup(ID, "summary");
 
@@ -759,7 +775,7 @@ const downloadSummary = async (ID) => {
 
   doc.setFontSize(18);
   doc.text(
-    `Summary Report - ${summary.address}`,
+    `Detailed Report - ${summary.address}`,
     105,
     20,
     null,
@@ -875,19 +891,6 @@ const getImageBase64 = (url) => {
 // Utility to capitalize first letter
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 const resetMarkerColors = () => {
@@ -1010,14 +1013,17 @@ const changePanel = async (ID, parentID) => {
       document.getElementById(`${sub.id}-content`).classList.add("open");
     });
   });
+  sideGIS.classList.add("open");
+
+  
+
 };
 
-const closeMarkerDetails = async () => {
+const closeMarkerDetails = async (ID = null) => {
   document.querySelectorAll(".groupsList--content h6").forEach((assess) => {
     assess.classList.remove("selected");
   });
   openedMarkId = 0;
-
   if (openedId !== 0) displayGroupDetails(openedId);
   else {
     let target = document.querySelector(".details");
@@ -1025,7 +1031,9 @@ const closeMarkerDetails = async () => {
     setTimeout(() => {
       target.remove();
     }, 300);
-  }
+  };
+  sideGIS.classList.remove("open");
+  markers[`assID-${ID}`].closePopup();
 };
 
 const closeGroupDetails = async (ID, animate = false) => {
@@ -1044,12 +1052,12 @@ const closeGroupDetails = async (ID, animate = false) => {
     }, 300);
   } else target.remove();
 
-  // document.getElementById(`group-${ID}`).classList.remove("selected");
 };
 
 map.on("click", () => {
   if (openedMarkId) {
     closeMarkerDetails();
+    sideGIS.classList.remove("open");
   }
 });
 
@@ -1149,7 +1157,7 @@ const addMarker = async (coords, color = "", popup = false) => {
           }
           if (i + 1 == ancestors.length) func = `goBack(${ancestor.id}, ${i})`;
           document.getElementById("address").innerHTML += `
-            <a onclick="${func}"><p>${comma}${ancestor.name}</p></a>
+            <a onclick="${func}" class=""><p>${comma}${ancestor.name}</p></a>
           `;
         });
 

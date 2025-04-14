@@ -2,14 +2,6 @@
 module.exports = {
   content: ["./dist/*.{html,js}", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   theme: {
-    screens: {
-      xs: "30rem", // 480px custom screen
-      sm: "640px",
-      md: "768px",
-      lg: "1024px",
-      xl: "1280px",
-      "2xl": "1536px",
-    },
     extend: {
       animation: {
         moveLeft: "moveLeft 0.3s ease-in-out",
