@@ -49,8 +49,7 @@
   <body class="bg-light h-dvh">
     <!-- HEADER -->
     <header
-      class="header bg-light lg:py-6 md:py-5 sm:py-4 py-3 lg:px-10 md:px-7 px-5 absolute w-full top-0 left-0 z-50"
-    >
+      class="header bg-light lg:py-6 md:py-5 sm:py-4 py-3 lg:px-10 md:px-7 px-5 absolute w-full top-0 left-0 z-50">
       <div class="header__wrapper flex justify-between items-center">
         <div
           class="header__name flex justify-between items-center sm:gap-4 lg:gap-10"
@@ -60,12 +59,13 @@
             Automated Road Crack Detection and Mapping System
           </h3>
         </div>
-        <nav class="flex justify-center items-center">
+        <nav class="flex justify-center items-center gap-3">
+          <h4 class="underline italic">kin@gmail.com</h4>
           <a href=""
             ><img
-              src="/img/add-icon.png"
+              src="/img/admin.png"
               alt="Admin"
-              class="w-7 md:w-10 lg:w-12"
+              class="w-6 md:w-8 lg:w-10"
           /></a>
         </nav>
       </div>
@@ -76,11 +76,13 @@
       class="dashboard h-full bg-primary lg:pt-[95px] md:pt-[79px] sm:pt-[64px] pt-[56px]"
     >
       <div class="container h-full">
-        <div class="dashboard__wrapper flex h-full w-full">
-          <div class="dashboard__info bg-black h-full w-full"></div>
-          <div class="dashboard__gis h-full w-full p-10">
-            <div class="p-5 bg-white h-full w-full">
-              <div id="map" class="w-full h-full z-10"></div>
+        <div class="dashboard__wrapper grid grid-cols-[2fr_1fr] h-full w-full">
+          <div class="dashboard__info bg-black h-full w-full">
+
+          </div>
+          <div class="dashboard__gis p-10">
+            <div class="p-5 bg-white h-full w-full rounded-xl shadow-lg">
+              <div id="map" class="w-full h-full z-10 rounded-xl "></div>
             </div>
           </div>
         </div>

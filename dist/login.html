@@ -11,17 +11,26 @@
     <section>
       <div class="login">
         <div class="container">
-          <div class="login__wrapper w-[22rem]">
-            <div class="login__logo grid place-items-center">
-              <img src="/img/logo1.png" class="w-[80px] " />
+          <!-- <div class="login__center min-h-screen grid place-items-center"> -->
+          <div class="login__wrapper w-[22rem] mx-auto mt-[8rem]">
+            <div class="login__logo grid place-items-center gap-2 mb-4">
+              <img src="/img/logo1.png" class="w-[4.5rem]" />
               <h2>Login to ARCDEM</h2>
             </div>
-            <div class="login__input flex flex-col gap-2 bg-light border-[1px] p-[1rem] shadow-xl rounded-2xl ">
-              <label for="email">Email</label>
-              <input name="email" id="email">
-              <label for="password">Password</label>
-              <input name="password" id="password">
+            <div class="login__input flex flex-col gap-4 border-[1.5px] p-[1.5rem] shadow-xl rounded-xl bg-gray-100 mb-[2rem]">
+              <div class="grid">
+                <label for="email"><p>Email</p></label>
+                <input name="email" id="email" type="email" />
+              </div>
+              <div class="grid">
+                <label for="password"><p>Password</p></label>
+                <input name="password" id="password" type="password" />
+              </div>
+              <button class="bg-primary p-1 mt-5 rounded-md border-[1px] text-light">Login</button>
+              <h6 class="text-center">Don't have an account?<a href="" class="text-blue-500"> Create one</a></h6>
             </div>
+            <!-- </div> -->
+             <h6 class="text-gray-500 text-center">Copyright &copy; 2025 - ARCDEM</h6>
           </div>
         </div>
       </div>

@@ -203,9 +203,11 @@
 
 /* ------------------------loginpage------------------- */
 input {
-  @apply bg-light border-black border-[1px] rounded-lg text-2xl
+  @apply bg-light border-black border-[0.5px] rounded-md p-1;
 }
 
-
+input:focus {
+  @apply focus:outline-none focus:ring-1 focus:ring-primary;
+}
 
 }
