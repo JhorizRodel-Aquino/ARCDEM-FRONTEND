@@ -67,14 +67,22 @@
   }
 
   .allindent {
-    @apply lg:pl-14 md:pl-10 pl-8;
+    @apply lg:pl-14 md:pl-10 sm:pl-7 pl-5;
   }
 
   .detailed-info {
-    @apply py-[10px] allindent border-b-2 pr-5;
+    @apply py-[7px] sm:py-[10px] allindent border-b-2 pr-3 sm:pr-5;
   }
 
-  .detailedInfos__wrapper img{
+  .detailed-info.admined {
+    @apply py-[5px] sm:py-[8px] border-0;
+  } /* pl-8 sm:pl-10 pr-3 sm:pr-5 */
+
+  .detailed-info.title {
+    @apply py-[7px] sm:py-[10px] px-3 sm:px-5;
+  }
+
+  .detailedInfos__wrapper img {
     @apply w-[25px] h-[25px] md:w-[30px] md:h-[30px] lg:w-[40px] lg:h-[40px];
   }
 
@@ -83,7 +91,15 @@
   }
 
   .crack-info {
-    @apply py-[19px] allindent border-b-2 pr-5;
+    @apply py-[19px] allindent border-b-2 pr-5 grid gap-2;
+  }
+
+  .crack-info.admined {
+    @apply border-0 pl-5;
+  }
+
+  .crack-info > p {
+    @apply pl-3;
   }
 
   #search-img {
@@ -119,7 +135,7 @@
   }
 
   .groupsPanel__menu {
-    @apply grid gap-[2px] sm:hidden z-[70] absolute top-0 right-0 mt-2 mr-2;
+    @apply grid gap-[2px] sm:hidden z-[70] absolute top-0 right-0 m-2;
   }
 
   .groupsPanel__menu span {
@@ -127,11 +143,11 @@
   }
 
   .groupsPanel__back {
-    @apply z-50 opacity-0 sm:opacity-100 relative right-0 top-0 sm:left-0 mt-[2px] ml-2 text-3xl grid justify-items-start;
+    @apply z-50 opacity-0 sm:opacity-100 relative right-0 top-0 sm:left-0 mt-[2px] ml-2 text-3xl grid justify-items-start pointer-events-none sm:pointer-events-auto;
   }
 
   .groupsPanel__back.open {
-    @apply z-[60] left-0 opacity-100;
+    @apply z-[60] left-0 opacity-100 pointer-events-auto;
   }
 
   .groupsPanel span {
@@ -154,11 +170,15 @@
   }
 
   .top {
-    @apply lg:h-[46.7px] md:h-[36.7px] truncate w-[10px];
+    @apply lg:h-[46.7px] md:h-[36.7px] flex justify-between z-50 w-full items-center bg-dark text-light gap-5 px-3;
   }
 
   .yellow-part {
-    @apply allindent pr-8 lg:py-4 md:py-[10px] sm:py-[6px] py-[4px];
+    @apply py-[7px] sm:py-[10px] px-3 sm:px-5 border-b-2;
+  }
+
+  .yellow-part.admined {
+    @apply py-[8px] sm:py-[12px] font-bold;
   }
 
   .groupsPanel--subs h6 {
@@ -172,7 +192,6 @@
     @apply py-3 relative h-full overflow-y-hidden;
   }
 
-
   .groupsList--content {
     @apply translate-y-full h-full w-full absolute z-[-1] top-0 opacity-0 overflow-y-auto;
   }
@@ -181,7 +200,7 @@
     @apply translate-y-0 duration-300 static opacity-100 ease-in-out;
   }
 
-   .groupsList--content .assess {
+  .groupsList--content .assess {
     @apply hover:bg-light/15;
   }
 
@@ -193,7 +212,7 @@
     @apply bg-primary hover:bg-primary;
   }
 
-  .sideGIS.open{
+  .sideGIS.open {
     @apply pl-[335px] md:pl-[410px] lg:pl-[510px] transition-all duration-300 ease-in-out;
   }
 
@@ -201,13 +220,92 @@
     @apply  z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out;
   } */
 
-/* ------------------------loginpage------------------- */
-input {
-  @apply bg-light border-black border-[0.5px] rounded-md p-1;
-}
+  /* ------------------------loginpage------------------- */
+  input {
+    @apply bg-light border-black border-[0.5px] rounded-md p-1;
+  }
 
-input:focus {
-  @apply focus:outline-none focus:ring-1 focus:ring-primary;
-}
+  input:focus {
+    @apply focus:outline-none focus:ring-1 focus:ring-primary;
+  }
+
+  .address {
+    @apply lg:text-lg md:text-base text-xs;
+  }
+
+  /* ------------------------adminpage------------------- */
+
+  .sidePanel {
+    @apply bg-light h-full w-[30rem];
+  }
+
+  .mainPanel {
+    @apply bg-dark/5 mx-auto h-full w-full p-5;
+  }
+
+  /* .detail__wrapper div {
+    @apply ;
+  } */
+
+  /* .select--text {
+    @apply flex items-center;
+  } */
+
+  /* .selection__wrapper::after {
+    @apply content-[""] absolute inline-block top-0 left-0 h-full w-full bg-red-200 overflow-x-clip mx-5 z-[-1];
+  } */
+
+  .select--trigger {
+    @apply duration-200 ease-in-out w-4 mt-1 leading-none tracking-[0px] flex justify-center items-start cursor-pointer;
+  }
+
+  .select--trigger small {
+    @apply p duration-200 ease-in-out z-40;
+  }
+
+  .select--trigger.open small {
+    @apply rotate-90 duration-200 ease-in-out;
+  }
+
+  .select--child {
+    @apply w-full h-0 overflow-hidden duration-200 ease-in-out opacity-0 hidden;
+  }
+  .select--child.open {
+    @apply h-auto duration-200 ease-in-out opacity-100 block rounded-b-md;
+  }
+  .select--child.selected {
+    @apply bg-secondary duration-0;
+  }
+
+  .select {
+    @apply grid grid-flow-col grid-cols-[auto_1fr] w-full z-20 items-start justify-items-start relative;
+  }
+
+  .select--text {
+    @apply w-full z-20 relative mt-1;
+  }
+  .select--text p {
+    @apply rounded-md pr-5 w-max px-2 cursor-pointer;
+  }
+  .select--text p.selected {
+    @apply bg-primary hover:bg-primary;
+  }
+  .select--text p.selected.open {
+    @apply rounded-t-md rounded-none;
+  }
+  .select--text p::after {
+    @apply content-[""] absolute inline-block top-0 left-0 h-full w-full rounded-md px-1 z-[-1];
+  }
+  .select--text p.selected::after {
+    @apply bg-primary hover:bg-primary;
+  }
+
+  .profile--nav a {
+    @apply py-[2px] px-5 w-full rounded-md;
+  }
+  .profile--nav a.open {
+    @apply bg-primary;
+  }
+
 
 }

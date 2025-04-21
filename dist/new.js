@@ -270,7 +270,13 @@ const displayMarkers = async () => {
     let lat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
     let lng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
 
-    let marker = L.marker([lat, lng]).addTo(map).bindPopup("Opened Assessment");
+    let marker = L.marker([lat, lng])
+      .addTo(map)
+      .bindPopup("Opened Assessment", {
+        closeButton: false,
+        autoClose: false,
+        closeOnClick: false,
+      });
 
     markers[`assID-${assessment.id}`] = marker;
     marker.on("click", (e) => {
@@ -283,6 +289,7 @@ const displayMarkers = async () => {
 
 const displayMarkersDetails = async (ID, lat, lng) => {
   if (ID === openedMarkId) return;
+  if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
   openedMarkId = ID;
   markers[`assID-${ID}`].openPopup();
   const detailsElement = document.querySelector(".details");
@@ -301,13 +308,13 @@ const displayMarkersDetails = async (ID, lat, lng) => {
     `<aside class="assessDetails details" id="assessDetails">
           <div
             id="details__toggle"
-            class="details__toggle z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out"
+            class="details__toggle cursor-pointer z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out"
           >
             &lsaquo;
           </div>
 
           <div>
-            <div class="top flex justify-between z-50 w-full items-center top-0 left-0 allindent pr-8 bg-dark text-light gap-5">
+            <div class="top">
               <h5 class="inline" id="coordinates">
                 <span>
                   ${Math.abs(lat).toFixed(6)}&deg; ${lat >= 0 ? "N" : "S"},
@@ -324,11 +331,11 @@ const displayMarkersDetails = async (ID, lat, lng) => {
           <span class="yellow-part bg-primary flex justify-between items-center">
             <span class="flex gap-1 items-center py-3 overflow-x-hidden">
               <img src="/img/pin-loc.png" class="w-[15px] h-[15px] md:w-[20px] md:h-[20px] lg:w-[30px] lg:h-[30px]" alt="" />
-              <span id="address" ">
+              <span class="address" id="address" ">
                
               </span>
             </span>
-            <a class="text-2xl sm:text-2xl md:text-3xl lg:text-4xl" onclick="closeMarkerDetails(${ID})">×</a>
+            <a class="text-2xl sm:text-2xl md:text-3xl lg:text-4xl" onclick="closeMarkerDetails()">×</a>
           </span>
 
           <div id="crackDetails" class="overflow-y-auto">
@@ -345,7 +352,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
   ancestors.forEach((ancestor, index) => {
     address.insertAdjacentHTML(
       "beforeend",
-      `<p class="inline capitalize">${index > 0 ? ", " : ""}${ancestor.name}</p>`
+      `${index > 0 ? ", " : ""}${ancestor.name}`
     );
   });
 
@@ -382,7 +389,6 @@ const displayMarkersDetails = async (ID, lat, lng) => {
       timeZone: "UTC",
     })
     .replace(",", "");
-
 
   crackDetails.innerHTML += `<p class="crack-info py-2"><span class="font-bold">Date Asssessed: </span>${formattedDate}</p>`;
   assessCracks.cracks.forEach((crack) => {
@@ -461,7 +467,7 @@ const homePanel = async (param, groupID = 0) => {
     "afterend",
     `
   <aside class="groupsPanel">
-    <div class="groupsPanel__menu" id="groupsPanel__menu">
+    <div class="groupsPanel__menu close" id="groupsPanel__menu">
       <span class=""></span>
       <span class=""></span>
       <span class=""></span>
@@ -487,6 +493,7 @@ const homePanel = async (param, groupID = 0) => {
   );
 
   document.getElementById("groupsPanel__menu").addEventListener("click", () => {
+    document.querySelector(".groupsPanel__menu").classList.toggle("close");
     document.querySelector(".groupsPanel").classList.toggle("open");
     document.querySelector(".groupsPanel__wrapper").classList.toggle("open");
     document.querySelector(".backdrop").classList.toggle("z-40");
@@ -504,6 +511,7 @@ const homePanel = async (param, groupID = 0) => {
       !menuButton.contains(event.target) &&
       window.innerWidth < 640 // Apply only for mobile screens (sm)
     ) {
+      menuButton.classList.remove("close");
       panel.classList.remove("open");
       wrapper.classList.remove("open");
       backdrop.classList.add("z-40");
@@ -540,45 +548,17 @@ const displayGroupLevels = async () => {
 };
 
 const displayGroupDetails = async (ID) => {
-  // if (ID === openedId ) return;
   const detailsElement = document.querySelector(".details");
   if (detailsElement) {
     detailsElement.remove();
   }
-  // if (currSubgrpIDPopup != ID || currSubgrpIDPopup != openedId) {
-  //   displayAssessState = false;
-  //   displaySubgrpState = false;
-  //   currSubgrpIDPopup = ID;
-  // }
-
-  // let groupNames = document.getElementById(`group-${ID}`);
-  // const key = `groupAss-${ID}`;
-  // if (openedId !== ID) {
-  //   let openedGroup = document.getElementById(`details-${openedId}`);
-  //   displayAssessState = false;
 
   const details = await fetchGroup(ID);
   console.log("details", details);
 
-
-  //   const assess = await fetchGroup(ID, "assessments");
-
-  //   removeMarker(assessGroup[key]);
-
-  //   assessGroup[key] = assess.assessments;
-  //   addMarker(assessGroup[key], "yellow");
-
-  //   let coords = [];
-  //   assessGroup[key].forEach((ass) => {
-  //     coords.push(ass.start_coor);
-  //   });
-
-  //   if (openedGroup) {
-  //     openedGroup.remove();
-  //     removeMarker(assessGroup[`groupAss-${openedId}`]);
-  //     addMarker(assessGroup[`groupAss-${openedId}`]);
-  //   }
-  //   openedId = ID;
+  if (ID !== openedId) {
+    await changePanel(ID, details.parent_id);
+  }
 
   closeGroupDetails(openedId);
   main.insertAdjacentHTML(
@@ -587,7 +567,7 @@ const displayGroupDetails = async (ID) => {
     <aside class="groupDetails details" id="groupDetails-${ID}">
       <div
         id="details__toggle"
-        class="details__toggle z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out"
+        class="details__toggle cursor-pointer z-[-1] sm:hidden text-center flex items-center justify-center text-5xl leading-none rounded-full h-14 w-16 pb-2 pl-5 bg-light absolute top-[50%] translate-y-[-50%] right-0 translate-x-[65%] duration-300 ease-in-out"
       >
         &lsaquo;
       </div>
@@ -602,14 +582,14 @@ const displayGroupDetails = async (ID) => {
         class="yellow-part bg-primary flex justify-between items-center border-y-[1px]"
         id="toggle-2"
       >
-        <span class="pin_loc flex gap-1 items-center cursor-pointer">
+        <span class="pin_loc flex gap-1 items-center justify-between cursor-pointer">
           <img src="/img/pin-loc.png" alt="" class="w-[15px] h-[15px] md:w-[20px] md:h-[20px] lg:w-[30px] lg:h-[30px]"/>
           <p>${details.name}</p>
         </span>
         <a class="text-2xl sm:text-2xl md:text-3xl lg:text-4xl" onclick="closeGroupDetails(${ID}, ${true})">×</a>
       </div>
       <div class="detailedInfo h-full overflow-y-auto" id="details-2">
-        <span class="detailed-info border-t-2 flex justify-between">
+        <span class="detailed-info title border-t-2 flex justify-between">
             <p class="font-bold  ">Summary Information</p>
             <button id="downloadSummaryBtn" onclick="downloadSummary(${ID})"><img src="/img/download.png" class="w-[15px] h-[15px] md:w-[20px] md:h-[20px] lg:w-[25px] lg:h-[25px]" alt="" /></button>
         </span>
@@ -670,7 +650,6 @@ const displayGroupDetails = async (ID) => {
   );
   sideGIS.classList.add("open");
 
-
   document.getElementById("details__toggle").addEventListener("click", () => {
     document.querySelector(".details").classList.toggle("close");
     document.querySelector(".details__toggle").classList.toggle("scale-x-[-1]");
@@ -695,39 +674,7 @@ const displayGroupDetails = async (ID) => {
   resetOnSm(smMediaQuery);
   smMediaQuery.addEventListener("change", resetOnSm);
 
-  if (ID !== openedId) changePanel(ID, details.parent_id);
-  console.log("parent_id", details.parent_id);
   openedId = ID;
-
-  //   let expanded = document.getElementById(`toggle-${ID}`);
-  //   let sumDetails = document.getElementById(`details-${ID}`);
-
-  //   expanded.addEventListener("click", () => {
-  //     sumDetails.classList.toggle("open");
-  //   });
-
-  //   zoomToPoints(coords);
-  //   sumDetails.classList.add("open");
-  // } else {
-  //   let track = document.getElementById(`details-${ID}`);
-
-  //   if (!track.classList.contains("open")) {
-  //     let coords = [];
-  //     assessGroup[key].forEach((ass) => {
-  //       coords.push(ass.start_coor);
-  //     });
-  //     zoomToPoints(coords);
-  //     removeMarker(assessGroup[key]);
-  //     addMarker(assessGroup[key], "yellow");
-  //   } else {
-  //     const allCoords = Object.values(assessGroup).flatMap((group) =>
-  //       group.map((item) => item.start_coor)
-  //     );
-  //     zoomToPoints(allCoords);
-  //     removeMarker(assessGroup[key]);
-  //     addMarker(assessGroup[key]);
-  //   }
-  // }
 };
 
 const downloadSummary = async (ID) => {
@@ -892,7 +839,6 @@ const getImageBase64 = (url) => {
 const capitalizeFirstLetter = (string) =>
   string.charAt(0).toUpperCase() + string.slice(1);
 
-
 const resetMarkerColors = () => {
   const marks = Object.values(markers); // Assuming 'markers' is an object of marker instances
   marks.forEach((mark) => {
@@ -913,7 +859,7 @@ const changePanel = async (ID, parentID) => {
     "afterend",
     `
     <aside class="groupsPanel">
-      <div class="groupsPanel__menu" id="groupsPanel__menu">
+      <div class="groupsPanel__menu close" id="groupsPanel__menu">
         <span class=""></span>
         <span class=""></span>
         <span class=""></span>
@@ -947,6 +893,7 @@ const changePanel = async (ID, parentID) => {
   );
 
   document.getElementById("groupsPanel__menu").addEventListener("click", () => {
+    document.querySelector(".groupsPanel__menu").classList.toggle("close");
     document.querySelector(".groupsPanel").classList.toggle("open");
     document.querySelector(".groupsPanel__wrapper").classList.toggle("open");
     document.querySelector(".groupsPanel__back").classList.toggle("open");
@@ -966,6 +913,7 @@ const changePanel = async (ID, parentID) => {
       !menuButton.contains(event.target) &&
       window.innerWidth < 640 // Apply only for mobile screens (sm)
     ) {
+      menuButton.classList.remove("close");
       panel.classList.remove("open");
       wrapper.classList.remove("open");
       back.classList.remove("open");
@@ -1014,16 +962,13 @@ const changePanel = async (ID, parentID) => {
     });
   });
   sideGIS.classList.add("open");
-
-  
-
 };
 
-const closeMarkerDetails = async (ID = null) => {
+const closeMarkerDetails = async () => {
   document.querySelectorAll(".groupsList--content h6").forEach((assess) => {
     assess.classList.remove("selected");
   });
-  openedMarkId = 0;
+
   if (openedId !== 0) displayGroupDetails(openedId);
   else {
     let target = document.querySelector(".details");
@@ -1031,27 +976,31 @@ const closeMarkerDetails = async (ID = null) => {
     setTimeout(() => {
       target.remove();
     }, 300);
-  };
+  }
   sideGIS.classList.remove("open");
-  markers[`assID-${ID}`].closePopup();
+  markers[`assID-${openedMarkId}`].closePopup();
+  openedMarkId = 0;
 };
 
 const closeGroupDetails = async (ID, animate = false) => {
-  openedMarkId = 0;
   let target = document.querySelector(".details");
   if (!target) return;
 
+  markers[`assID-${openedMarkId}`].closePopup();
+  openedMarkId = 0;
+
   if (animate) {
-    openedId = 0;
-    target.classList.add("animate-moveOutLeft", "z-40");
-    homePanel();
-    displayGroupLevels();
-    document.getElementById("sortGroup").value = selectedGroup;
+    if (!target.classList.contains("close"))
+      target.classList.add("animate-moveOutLeft", "z-40");
     setTimeout(() => {
       target.remove();
     }, 300);
-  } else target.remove();
 
+    openedId = 0;
+    homePanel();
+    displayGroupLevels();
+    document.getElementById("sortGroup").value = selectedGroup;
+  } else target.remove();
 };
 
 map.on("click", () => {
@@ -1062,7 +1011,6 @@ map.on("click", () => {
 });
 
 init();
-
 
 /----------------------------------------/;
 const closeSubgrpDetails = async (ID, parentID, all = false) => {
@@ -1108,14 +1056,14 @@ const addMarker = async (coords, color = "", popup = false) => {
     // Opens popup by default;
     else marker = L.marker(coors).addTo(map); // Opens popup by default;
 
-    // Bind popup once, but don't open it yet
-    marker.bindPopup(`Assessment ${assessIndex}`, { closeButton: false });
+    // // Bind popup once, but don't open it yet
+    // marker.bindPopup(`Assessment ${assessIndex}`, { closeButton: false });
 
     // Click event for opening the popup and showing crack details
     marker.on("click", async () => {
-      if (currentPopup) {
-        map.closePopup(currentPopup); // Close previous popup
-      }
+      // if (currentPopup) {
+      //   map.closePopup(currentPopup); // Close previous popup
+      // }
 
       marker.openPopup(); // Open new popup
       currentPopup = marker.getPopup(); // Store the opened popup
@@ -1342,4 +1290,3 @@ async function generateAssessments(data) {
 // Add markers to the map
 
 // displayGroupLevel(selectedGroup);
-
