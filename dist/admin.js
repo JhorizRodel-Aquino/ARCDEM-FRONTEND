@@ -1,9 +1,10 @@
-const url = "http://127.0.0.1:5000";
+const url = "http://192.168.68.100:5000";
 // const url = "https://api.arcdem.site";
 
 let openedId = 0;
 let openedMarkId = 0;
 let markers = {};
+let modify = { grp: [], ass: [] };
 
 const yellowMark = new L.Icon({
   iconUrl:
@@ -195,7 +196,7 @@ const displayMarkers = async () => {
     markers[`assID-${assessment.id}`] = marker;
     marker.on("click", (e) => {
       e.originalEvent.stopPropagation();
-      displayMarkersDetails(this, assessment.id, lat, lng);
+      displayMarkersDetails(assessment.id, lat, lng);
       marker.openPopup();
     });
   });
@@ -271,7 +272,7 @@ const displayAll = async () => {
     }
 
     return `
-      <div class="select grp" id="grp-${group.id || "unknown"}">
+      <div class="select grp" id="grp-${group.id}">
         <span class="select--trigger"><small>&#8250;</small></span>
         <div class="select--text">
           <p>${group.name || "Unnamed Group"}</p>
@@ -305,35 +306,16 @@ const displayAll = async () => {
 
     trigger.addEventListener("click", toggleOpen);
 
-    const removeSelected = () => {
-      document.querySelectorAll(".select--child").forEach((el) => {
-        el.classList.remove("selected");
-      });
-      document.querySelectorAll(".select--text p").forEach((el) => {
-        el.classList.remove("selected");
-      });
-    };
-
-    // textP.addEventListener("click", () => {
-    //   removeSelected();
-    //   child.classList.add("selected");
-    //   textP.classList.add("selected");
-    // });
-
-    // textP.addEventListener("dblclick", (e) => {
-    //   e.preventDefault(); // Prevent default selection
-    //   window.getSelection()?.removeAllRanges(); // Clear any accidental selection
-    //   toggleOpen();
-    // });
-
-    // textP.style.userSelect = "none";
-    // textP.style.webkitUserSelect = "none";
-    // textP.style.mozUserSelect = "none";
-
     // Hide arrow for nodes without children
     if (child.querySelector(".select") === null) {
       trigger.classList.add("opacity-0", "pointer-events-none");
     }
+
+    textP.addEventListener("dblclick", (e) => {
+      e.preventDefault(); // Prevent default selection
+      window.getSelection()?.removeAllRanges(); // Clear any accidental selection
+      toggleOpen();
+    });
   });
 
   // Handle clicks for group and assessment entries
@@ -349,33 +331,159 @@ const displayAll = async () => {
   let asss = document.querySelectorAll(".select.ass");
   asss.forEach((ass) => {
     const triggerText = ass.querySelector(".select--text p");
-
-    // Using a regular function to ensure 'this' refers to the ass element
     triggerText.addEventListener("click", function () {
       const id = ass.id.replace("ass-", "");
       const lat = parseFloat(ass.dataset.lat);
       const lng = parseFloat(ass.dataset.lng);
-
-      // 'this' will refer to the ass element
-      displayMarkersDetails(this, id, lat, lng);
+      displayMarkersDetails(id, lat, lng);
     });
   });
 };
 
-const displayMarkersDetails = async (SELF, ID, lat, lng) => {
+const manageAll = async () => {
+  const all = await fetchAll();
+  const selWrapper = document.querySelector(".selection__wrapper");
+  selWrapper.innerHTML = "";
+
+  const buildSelectHTML = (group) => {
+    // Build children first (recursive call)
+    const childHTML = group.children
+      ? group.children.map((child) => buildSelectHTML(child)).join("")
+      : "";
+
+    // Build assessments
+    let assessmentsHTML = "";
+    if (group.assessments && group.assessments.length > 0) {
+      let index = 0;
+      assessmentsHTML = group.assessments
+        .map((assessment) => {
+          index++;
+          const id = assessment.id;
+          const lat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
+          const lng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
+
+          return `
+            <div class="select ass" id="ass-${id}" data-lat="${lat}" data-lng="${lng}">
+              <span class="select--trigger"><small>&#8250;</small></span>
+              <div class="select--text">
+                <p class="flex justify-between items-center gap-2 group">
+                  Assessment ${index}
+                  <img
+                    class="hidden group-hover:block"
+                    src="../img/edit.png"
+                    alt=""
+                  />
+                </p>
+                <div class="select--child">
+                  <div class="select--content">
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    return `
+      <div class="select grp" id="grp-${group.id}">
+        <span class="select--trigger"><small>&#8250;</small></span>
+        <div class="select--text">
+          <p class="flex justify-between items-center gap-2 group">
+            ${group.name}
+            <img
+              class="hidden group-hover:block"
+              src="../img/edit.png"
+              alt=""
+            />
+          </p>
+          <div class="select--child">
+            <div class="select--content">
+              ${childHTML}
+              ${assessmentsHTML}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  all.forEach((group) => {
+    selWrapper.innerHTML += buildSelectHTML(group);
+  });
+
+  // Dropdown behavior
+  let selects = document.querySelectorAll(".select");
+  selects.forEach((select) => {
+    const trigger = select.querySelector(".select--trigger");
+    const child = select.querySelector(".select--child");
+    const textP = select.querySelector(".select--text p");
+
+    const toggleOpen = () => {
+      child.classList.toggle("open");
+      textP.classList.toggle("open");
+      trigger.classList.toggle("open");
+    };
+
+    trigger.addEventListener("click", toggleOpen);
+
+    // Hide arrow for nodes without children
+    if (child.querySelector(".select") === null) {
+      trigger.classList.add("opacity-0", "pointer-events-none");
+    }
+
+    textP.addEventListener("dblclick", (e) => {
+      e.preventDefault(); // Prevent default selection
+      window.getSelection()?.removeAllRanges(); // Clear any accidental selection
+      toggleOpen();
+    });
+  });
+
+  // Handle clicks for group and assessment entries
+  let grps = document.querySelectorAll(".select.grp");
+  grps.forEach((grp) => {
+    const triggerText = grp.querySelector(".select--text p");
+    triggerText.addEventListener("click", () => {
+      const id = grp.id.replace("grp-", "");
+      manageGroupDetails(id);
+    });
+  });
+
+  let asss = document.querySelectorAll(".select.ass");
+  asss.forEach((ass) => {
+    const triggerText = ass.querySelector(".select--text p");
+    triggerText.addEventListener("click", function () {
+      const id = ass.id.replace("ass-", "");
+      const lat = parseFloat(ass.dataset.lat);
+      const lng = parseFloat(ass.dataset.lng);
+      manageMarkersDetails(id, lat, lng);
+    });
+  });
+};
+
+const displayMarkersDetails = async (ID, lat, lng, detail = true) => {
   if (ID === openedMarkId) return;
+  console.log(`assID-${openedMarkId}`);
   if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
+  resetMarkerColors();
   openedMarkId = ID;
   markers[`assID-${ID}`].openPopup();
 
-  const assessCracks = await fetchAssessments(ID, true);
+  let focus = [];
+  mark = markers[`assID-${ID}`];
+  focus.push(mark);
+  mark.setIcon(yellowMark);
+  zoomToPoints(focus);
 
-  lat = lat.toFixed(6);
-  lng = lng.toFixed(6);
+  if (detail) {
+    const assessCracks = await fetchAssessments(ID, true);
 
-  const detailWrapper = document.querySelector(".detail__wrapper");
-  detailWrapper.innerHTML = "";
-  detailWrapper.innerHTML += `
+    lat = lat.toFixed(6);
+    lng = lng.toFixed(6);
+
+    const detailWrapper = document.querySelector(".detail__wrapper");
+    detailWrapper.innerHTML = "";
+    detailWrapper.innerHTML += `
       <div class="yellow-part admined border-0 change" id="toggle-2">
         <span class="pin_loc flex gap-1 items-center">
           <img src="/img/pin-loc.png" alt="" />
@@ -389,32 +497,32 @@ const displayMarkersDetails = async (SELF, ID, lat, lng) => {
       </div>
     `;
 
-  let index = 0;
-  const crackContainer = document.getElementById("crackContainer");
-  crackContainer.innerHTML = "";
+    let index = 0;
+    const crackContainer = document.getElementById("crackContainer");
+    crackContainer.innerHTML = "";
 
-  const formattedDate = new Date(assessCracks.date)
-    .toLocaleString("en-CA", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-      timeZone: "UTC",
-    })
-    .replace(",", "");
-  crackContainer.innerHTML += `
+    const formattedDate = new Date(assessCracks.date)
+      .toLocaleString("en-CA", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "UTC",
+      })
+      .replace(",", "");
+    crackContainer.innerHTML += `
           <div class="detailed-info admined">
             <span class="flex gap-[15px] items-center">
               <h4 class="font-bold">${formattedDate}</h4>
             </span>
           </div>      
         `;
-  assessCracks.cracks.forEach((crack) => {
-    index++;
-    crackContainer.innerHTML += `
+    assessCracks.cracks.forEach((crack) => {
+      index++;
+      crackContainer.innerHTML += `
           <div class="detailed-info admined">
             <span class="flex gap-[15px] items-center">
               <p class="font-bold">Crack ${index}</p>
@@ -425,25 +533,25 @@ const displayMarkersDetails = async (SELF, ID, lat, lng) => {
           </div>
         `;
 
-    let solution;
-    if (
-      crack.crack_type == "transverse" ||
-      (crack.crack_type == "longitudinal" && crack.crack_severity == "narrow")
-    ) {
-      solution = "Grooving and Sealing";
-    } else if (
-      crack.crack_type == "transverse" ||
-      (crack.crack_type == "longitudinal" && crack.crack_severity == "wide")
-    ) {
-      solution = "Stitch Repair";
-    } else {
-      solution = "Reblocking";
-    }
-    const endCrack = document.getElementById(`endCrack-${index}`);
-    if (crack.crack_type.toLowerCase() === "multiple") {
-      endCrack.insertAdjacentHTML(
-        "afterend",
-        `
+      let solution;
+      if (
+        crack.crack_type == "transverse" ||
+        (crack.crack_type == "longitudinal" && crack.crack_severity == "narrow")
+      ) {
+        solution = "Grooving and Sealing";
+      } else if (
+        crack.crack_type == "transverse" ||
+        (crack.crack_type == "longitudinal" && crack.crack_severity == "wide")
+      ) {
+        solution = "Stitch Repair";
+      } else {
+        solution = "Reblocking";
+      }
+      const endCrack = document.getElementById(`endCrack-${index}`);
+      if (crack.crack_type.toLowerCase() === "multiple") {
+        endCrack.insertAdjacentHTML(
+          "afterend",
+          `
             <p class="pl-6"><span class="font-bold">Affected Area: </span>${
               crack.crack_width * crack.crack_length
             }m<sup>2</sup></p>
@@ -452,24 +560,28 @@ const displayMarkersDetails = async (SELF, ID, lat, lng) => {
             }m</p>
             <p class="pl-6"><span class="font-bold">Recommended Solution: </span>${solution}</p>
           `
-      );
-    } else if (
-      crack.crack_type.toLowerCase() === "longitudinal" ||
-      crack.crack_type.toLowerCase() === "transverse"
-    ) {
-      endCrack.insertAdjacentHTML(
-        "afterend",
-        `
+        );
+      } else if (
+        crack.crack_type.toLowerCase() === "longitudinal" ||
+        crack.crack_type.toLowerCase() === "transverse"
+      ) {
+        endCrack.insertAdjacentHTML(
+          "afterend",
+          `
             <p class="pl-6"><span class="font-bold">Recommended Solution: </span>${solution}</p>
           `
-      );
-    }
-  });
+        );
+      }
+    });
 
-  let filename = `${url}/image/${assessCracks.filename}.jpg`;
-  crackContainer.innerHTML += `<img src="${filename}" class="object-fit p-5" />`;
+    let filename = `${url}/image/${assessCracks.filename}.jpg`;
+    crackContainer.innerHTML += `<img src="${filename}" class="object-fit p-5" />`;
+  }
 
-  // let textP = SELF.querySelector(".select--text p");
+  let select = document.getElementById(`ass-${ID}`);
+  const child = select.querySelector(".select--child");
+  const textP = select.querySelector(".select--text p");
+
   const removeSelected = () => {
     document.querySelectorAll(".select--child").forEach((el) => {
       el.classList.remove("selected");
@@ -478,22 +590,14 @@ const displayMarkersDetails = async (SELF, ID, lat, lng) => {
       el.classList.remove("selected");
     });
   };
-  const child = SELF.nextElementSibling;;
-  SELF.addEventListener("click", () => {
-    removeSelected();
-    child.classList.add("selected");
-    SELF.classList.add("selected");
-  });
 
-  SELF.addEventListener("dblclick", (e) => {
-    e.preventDefault(); // Prevent default selection
-    window.getSelection()?.removeAllRanges(); // Clear any accidental selection
-    toggleOpen();
-  });
+  removeSelected();
+  child.classList.add("selected");
+  textP.classList.add("selected");
 
-  // SELF.style.userSelect = "none";
-  // SELF.style.webkitUserSelect = "none";
-  // SELF.style.mozUserSelect = "none";
+  textP.style.userSelect = "none";
+  textP.style.webkitUserSelect = "none";
+  textP.style.mozUserSelect = "none";
 };
 
 const resetMarkerColors = () => {
@@ -516,19 +620,19 @@ const zoomBasedOnGroup = async (ID) => {
   zoomToPoints(focus);
 };
 
-const displayGroupDetails = async (ID) => {
+const resetZoom = () => {
+  map.setView([12.8797, 121.774], 6); // Center of the Philippines, Zoom level 6
+};
+
+const displayGroupDetails = async (ID, detail = true) => {
   if (openedId === ID) return;
 
-  const detailsElement = document.querySelector(".details");
-  if (detailsElement) {
-    detailsElement.remove();
-  }
+  if (detail) {
+    const details = await fetchGroup(ID);
 
-  const details = await fetchGroup(ID);
-
-  const detailWrapper = document.querySelector(".detail__wrapper");
-  detailWrapper.innerHTML = "";
-  detailWrapper.innerHTML += `
+    const detailWrapper = document.querySelector(".detail__wrapper");
+    detailWrapper.innerHTML = "";
+    detailWrapper.innerHTML += `
       <div class="yellow-part admined border-0 base change" id="toggle-2">
         <span class="pin_loc flex gap-1 items-center">
           <img src="/img/pin-loc.png" alt="" />
@@ -590,15 +694,113 @@ const displayGroupDetails = async (ID) => {
         </div>
       </div>
     `;
+  }
 
   zoomBasedOnGroup(ID);
 
   openedId = ID;
 
-  if (openedMarkId !== 0) {
-    markers[`assID-${openedMarkId}`].closePopup();
-    openedMarkId = 0;
+  if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
+
+  let select = document.getElementById(`grp-${ID}`);
+  const child = select.querySelector(".select--child");
+  const textP = select.querySelector(".select--text p");
+
+  const removeSelected = () => {
+    document.querySelectorAll(".select--child").forEach((el) => {
+      el.classList.remove("selected");
+    });
+    document.querySelectorAll(".select--text p").forEach((el) => {
+      el.classList.remove("selected");
+    });
+  };
+
+  removeSelected();
+  child.classList.add("selected");
+  textP.classList.add("selected");
+
+  textP.style.userSelect = "none";
+  textP.style.webkitUserSelect = "none";
+  textP.style.mozUserSelect = "none";
+};
+
+const manageGroupDetails = async (ID) => {
+  let select = document.getElementById(`grp-${ID}`);
+  select.classList.toggle("selected");
+
+  if (!modify.grp.includes(Number(ID))) {
+    modify.grp.push(Number(ID));
+  } else {
+    // Reassign filtered result back to modify.grp
+    modify.grp = modify.grp.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
   }
+
+  console.log(modify);
+
+  updateList();
+};
+
+const manageMarkersDetails = async (ID, lat, lng) => {
+  let focus = [];
+  mark = markers[`assID-${ID}`];
+  focus.push(mark);
+
+  zoomToPoints(focus);
+
+  let select = document.getElementById(`ass-${ID}`);
+  select.classList.toggle("selected");
+  if (!modify.ass.includes(Number(ID))) {
+    modify.ass.push(Number(ID));
+  } else modify.ass = modify.ass.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
+
+  console.log(modify);
+
+  updateList();
+};
+
+const updateList = async () => {
+  const removeSelected = () => {
+    document.querySelectorAll(".select--child").forEach((el) => {
+      el.classList.remove("selected");
+    });
+    document.querySelectorAll(".select--text p").forEach((el) => {
+      el.classList.remove("selected");
+    });
+  };
+  removeSelected();
+  resetMarkerColors();
+  modify.ass.forEach((ID) => {
+    const select = document.getElementById(`ass-${ID}`);
+    const child = select.querySelector(".select--child");
+    const textP = select.querySelector(".select--text p");
+
+    child.classList.add("selected");
+    textP.classList.add("selected");
+
+    textP.style.userSelect = "none";
+    textP.style.webkitUserSelect = "none";
+    textP.style.mozUserSelect = "none";
+
+    const marker = markers[`assID-${ID}`];
+    marker.setIcon(yellowMark);
+  });
+
+  modify.grp.forEach((ID) => {
+    const select = document.getElementById(`grp-${ID}`);
+    const child = select.querySelector(".select--child");
+    const textP = select.querySelector(".select--text p");
+
+    child.classList.add("selected");
+    textP.classList.add("selected");
+
+    textP.style.userSelect = "none";
+    textP.style.webkitUserSelect = "none";
+    textP.style.mozUserSelect = "none";
+
+    if (select.classList.contains("selected")) {
+      zoomBasedOnGroup(ID);
+    } else resetMarkerColors();
+  });
 };
 
 // const displayDetails = async (param) => {
@@ -616,8 +818,71 @@ const displayGroupDetails = async (ID) => {
 //   }
 // };
 
+async function createHorizontalCrackChart() {
+  try {
+    const response = await fetch(`${url}/priority_scores`);
+    const data = await response.json();
+
+    // Sort by priority (highest score first)
+    data.sort(
+      (a, b) =>
+        b.weighted_crack_score_per_meter - a.weighted_crack_score_per_meter
+    );
+
+    const labels = data.map((d) => d.group_name);
+    const values = data.map((d) => d.weighted_crack_score_per_meter);
+
+    const ctx = document.getElementById("crackChart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Weighted Crack Score per Meter",
+            data: values,
+            backgroundColor: "rgba(255, 99, 132, 0.6)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        indexAxis: "y", // horizontal
+        responsive: true,
+        maintainAspectRatio: false, // allows full container size
+        scales: {
+
+        },
+        elements: {
+          bar: {
+            barThickness: 25, // ✅ fixed bar "height" (since it's horizontal)
+            maxBarThickness: 30, // Optional: limit max
+          },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: "Road Repair Priority by Group (Horizontal)",
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return `Score: ${context.parsed.x.toFixed(2)}`;
+              },
+            },
+          },
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error creating horizontal crack chart:", error);
+  }
+}
+
 const closeMarkerDetails = async () => {
   markers[`assID-${openedMarkId}`].closePopup();
+  markers[`assID-${openedMarkId}`].setIcon(blueMark);
   openedMarkId = 0;
 };
 
@@ -628,7 +893,7 @@ const dashboard = async (self) => {
 
   const mainPanel = document.querySelector(".mainPanel");
   mainPanel.innerHTML = `
-             <div
+          <div
             class="dashboard h-full w-full mx-auto grid grid-cols-3 grid-rows-2 gap-5"
           >
             <div
@@ -639,48 +904,7 @@ const dashboard = async (self) => {
               </div>
 
               <div class="selection__wrapper overflow-x-auto flex-1 ml-5 mr-5">
-                <div class="select">
-                  <span class="select--trigger"><small>&#8250;</small></span>
-                  <div class="select--text">
-                    <p>Calabarzon</p>
-                    <div class="select--child">
-                      <div class="select--content">
-                        <div class="select">
-                          <span class="select--trigger"
-                            ><small>&#8250;</small></span
-                          >
-                          <div class="select--text">
-                            <p>Calabarzon</p>
-                            <div class="select--child">
-                              <div class="select--content">
-                                <div class="select">
-                                  <span class="select--trigger"
-                                    ><small>&#8250;</small></span
-                                  >
-                                  <div class="select--text">
-                                    <p>Calabarzon</p>
-                                    <div class="select--child">
-                                      <div class="select--content"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="select">
-                  <span class="select--trigger"><small>&#8250;</small></span>
-                  <div class="select--text">
-                    <p>Calabarzon</p>
-                    <div class="select--child">
-                      <div class="select--content"></div>
-                    </div>
-                  </div>
-                </div>
+                
               </div>
             </div>
 
@@ -690,6 +914,11 @@ const dashboard = async (self) => {
               <div class="yellow-part admined" id="toggle-2">
                 <h2>Top Places With Most Cracks</h2>
               </div>
+
+              <div id="chartContainer" class="w-full h-vh relative">
+                <canvas id="crackChart" class="w-full h-full"></canvas>
+              </div>
+
             </div>
 
             <div
@@ -788,6 +1017,114 @@ const dashboard = async (self) => {
 
   await displayAll();
   await displayMarkers();
+  createHorizontalCrackChart();
 };
 
-const manage = async () => {};
+const manage = async (self) => {
+  const navs = document.querySelectorAll(".profile--nav a");
+  navs.forEach((n) => n.classList.remove("open"));
+  self.classList.add("open");
+
+  const mainPanel = document.querySelector(".mainPanel");
+  mainPanel.innerHTML = `
+          <div class="manage h-full w-full mx-auto grid grid-cols-2 gap-5">
+            <div
+              class="selection bg-white h-full w-full rounded-xl flex flex-col overflow-hidden"
+            >
+              <div
+                class="yellow-part admined flex justify-between mx-5 gap-10"
+                id="toggle-2"
+              >
+                <a class="btn primary" onclick="deleteSelected()">Delete</a>
+              </div>
+
+              <div class="selection__wrapper overflow-x-auto flex-1 ml-5 mr-5">
+                <div class="select">
+                  <span class="select--trigger"><small>&#8250;</small></span>
+                  <div class="select--text">
+                    <p class="flex justify-between items-center gap-2 group">
+                      Calabarzon
+                      <img
+                        class="hidden group-hover:block"
+                        src="../img/edit.png"
+                        alt=""
+                      />
+                    </p>
+                    <div class="select--child">
+                      <div class="select--content"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="map bg-white h-full w-full rounded-xl overflow-hidden">
+              <div id="map" class="w-full h-full z-10"></div>
+            </div>
+          </div>
+  `;
+
+  initMap();
+
+  await manageAll();
+  await displayMarkers();
+};
+
+const deleteSelected = async () => {
+  // Show the confirmation modal
+  const modal = document.getElementById("confirmationModal");
+  const confirmBtn = document.getElementById("confirmDeleteBtn");
+  const cancelBtn = document.getElementById("cancelDeleteBtn");
+
+  // Show modal with Tailwind classes for visibility
+  modal.classList.remove("hidden");
+
+  // Wait for user response (resolve/reject based on user choice)
+  return new Promise((resolve, reject) => {
+    confirmBtn.onclick = async () => {
+      const selectedData = {
+        groups: modify.grp,
+        assessments: modify.ass,
+      };
+
+      try {
+        const response = await fetch(`${url}/delete_selected`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(selectedData),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data.message); // Success message from server
+
+          // Reset modify arrays and update the UI
+          modify.grp = [];
+          modify.ass = [];
+          updateList(); // Update the UI (clear selected states)
+        } else {
+          const data = await response.json();
+          console.log(data.error); // Error message from server
+          alert(`Error: ${data.error}`);
+        }
+      } catch (error) {
+        console.error("Error deleting selected:", error);
+        alert("An error occurred while deleting.");
+      }
+
+      // Close the modal after the deletion
+      modal.classList.add("hidden");
+      resolve(); // Resolve promise indicating deletion completed
+    };
+
+    cancelBtn.onclick = () => {
+      // Close the modal without deleting
+      modal.classList.add("hidden");
+      reject("Deletion cancelled"); // Reject promise indicating cancellation
+    };
+  });
+};
+
+dashboard(document.getElementById("initial"));

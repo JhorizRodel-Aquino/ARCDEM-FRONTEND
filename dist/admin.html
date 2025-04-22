@@ -69,6 +69,17 @@
       </div>
     </header>
 
+<div id="confirmationModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
+  <div class="modal-content bg-white p-6 rounded-lg shadow-lg w-96">
+    <h4 class="text-xl font-semibold mb-4">Confirm Deletion</h4>
+    <p class="mb-4">Are you sure you want to delete the selected assessments and groups? This action cannot be undone.</p>
+    <div class="flex justify-end space-x-4">
+      <button id="confirmDeleteBtn" class="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Yes, Delete</button>
+      <button id="cancelDeleteBtn" class="bg-gray-400 text-white py-2 px-4 rounded-lg hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50">Cancel</button>
+    </div>
+  </div>
+</div>
+
     <!-- DASHBOARD -->
     <!-- <section
       class="dashboard flex-1 bg-light"
@@ -86,7 +97,9 @@
     <section class="admin flex-1 bg-light overflow-hidden">
       <div class="admin__wrapper h-full w-full flex">
         <aside class="sidePanel">
-          <div class="sidePanel__wrapper grid gap-5 px-5 h-full w-full content-start">
+          <div
+            class="sidePanel__wrapper grid gap-5 px-5 h-full w-full content-start"
+          >
             <div
               class="profile grid grid-flow-col grid-cols-[auto_1fr] justify-items-start items-center gap-4 border-b-dark/25 border-b-2 py-5"
             >
@@ -104,63 +117,41 @@
               </div>
             </div>
 
-            <nav class="profile--nav grid gap-[2px] justify-items-start items-start">
-              <a onclick="dashboard(this)"><p>Dashboard</p></a>
-              <a><p>Manage Assessments</p></a>
-              <a><p>Manage Admins</p></a>
+            <nav
+              class="profile--nav grid gap-[2px] justify-items-start items-start"
+            >
+              <a id="initial" onclick="dashboard(this)"><p>Dashboard</p></a>
+              <a onclick="manage(this)"><p>Manage Assessments</p></a>
+              <!-- <a><p>Manage Admins</p></a> -->
             </nav>
           </div>
         </aside>
 
         <div class="mainPanel">
-          <div
-            class="dashboard h-full w-full mx-auto grid grid-cols-3 grid-rows-2 gap-5"
-          >
+          <!-- <div class="manage h-full w-full mx-auto grid grid-cols-2 gap-5">
             <div
               class="selection bg-white h-full w-full rounded-xl flex flex-col overflow-hidden"
             >
-              <div class="yellow-part admined" id="toggle-2">
-                <h2>Selection</h2>
+              <div
+                class="yellow-part admined flex justify-between mx-5 gap-10"
+                id="toggle-2"
+              >
+                <a class="btn primary">Group</a
+                ><a class="btn primary">Delete</a>
               </div>
 
               <div class="selection__wrapper overflow-x-auto flex-1 ml-5 mr-5">
                 <div class="select">
                   <span class="select--trigger"><small>&#8250;</small></span>
                   <div class="select--text">
-                    <p>Calabarzon</p>
-                    <div class="select--child">
-                      <div class="select--content">
-                        <div class="select">
-                          <span class="select--trigger"
-                            ><small>&#8250;</small></span
-                          >
-                          <div class="select--text">
-                            <p>Calabarzon</p>
-                            <div class="select--child">
-                              <div class="select--content">
-                                <div class="select">
-                                  <span class="select--trigger"
-                                    ><small>&#8250;</small></span
-                                  >
-                                  <div class="select--text">
-                                    <p>Calabarzon</p>
-                                    <div class="select--child">
-                                      <div class="select--content"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="select">
-                  <span class="select--trigger"><small>&#8250;</small></span>
-                  <div class="select--text">
-                    <p>Calabarzon</p>
+                    <p class="flex justify-between items-center gap-2 group">
+                      Calabarzon
+                      <img
+                        class="hidden group-hover:block"
+                        src="../img/edit.png"
+                        alt=""
+                      />
+                    </p>
                     <div class="select--child">
                       <div class="select--content"></div>
                     </div>
@@ -169,109 +160,16 @@
               </div>
             </div>
 
-            <div
-              class="graph bg-white h-full w-full rounded-xl overflow-hidden"
-            >
-              <div class="yellow-part admined" id="toggle-2">
-                <h2>Top Places With Most Cracks</h2>
-              </div>
-            </div>
-
-            <div
-              class="detail bg-white h-full w-full rounded-xl col-start-2 row-start-1 row-span-2 overflow-hidden"
-            >
-              <div class="yellow-part admined detailTop" id="toggle-2">
-                <h2>Details</h2>
-              </div>
-
-              <div class="detail__wrapper overflow-y-auto h-full w-full">
-                <div
-                  class="yellow-part admined border-0 base change"
-                  id="toggle-2"
-                >
-                  <span class="pin_loc flex gap-1 items-center">
-                    <img src="/img/pin-loc.png" alt="" />
-                    <h3 class="not-italic">no province</h3>
-                  </span>
-                </div>
-
-                <div class="detailedInfo detail__admin change" id="details-2">
-                  <div class="detailedInfos__wrapper">
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/length.png" alt="" />
-                        <p class="font-bold">Length of Road Monitored:</p>
-                      </span>
-                      <p class="pl-[56px]">5 meters</p>
-                    </div>
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/lanes.png" alt="" />
-                        <p class="font-bold">Number of Assessments:</p>
-                      </span>
-                      <p class="pl-[56px]">1 assessments</p>
-                    </div>
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/cracks-detected.png" alt="" />
-                        <p class="font-bold">Types of Cracks Detected:</p>
-                      </span>
-                      <span class="grid gap-2">
-                        <p class="pl-[56px]">Transverse Cracks (1)</p>
-                        <p class="pl-[56px]">Longitudinal Cracks (1)</p>
-                        <p class="pl-[56px]">Multiple Cracks (0)</p>
-                      </span>
-                    </div>
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/total-crack.png" alt="" />
-                        <p class="font-bold">Total Number of Cracks:</p>
-                      </span>
-                      <p class="pl-[56px]">2 cracks</p>
-                    </div>
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/date.png" alt="" />
-                        <p class="font-bold">Date Last Updated:</p>
-                      </span>
-                      <p class="pl-[56px]">2025-02-28 12:53:20</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- <div class="overflow-y-auto detail__admin">
-                <div class="crack-info admined">
-                  <span class="font-bold"><p>Crack 1:</p></span>
-                  <p><span class="font-bold">Type: </span>longitudinal</p>
-                  <p><span class="font-bold">Severity: </span>narrow</p>
-                  <p>
-                    <span class="font-bold">Recommended Solution: </span>Asphalt
-                  </p>
-                </div>
-                <div class="crack-info admined">
-                  <span class="font-bold"><p>Crack 2:</p></span>
-                  <p><span class="font-bold">Type: </span>transverse</p>
-                  <p><span class="font-bold">Severity: </span>wide</p>
-                  <p>
-                    <span class="font-bold">Recommended Solution: </span>Asphalt
-                  </p>
-                </div>
-                <img src="crack.png" class="object-fit p-5" />
-              </div> -->
-            </div>
-
-            <div
-              class="map bg-white h-full w-full rounded-xl overflow-hidden col-start-3 row-start-1 row-span-2"
-            >
+            <div class="map bg-white h-full w-full rounded-xl overflow-hidden">
               <div id="map" class="w-full h-full z-10"></div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </section>
 
     <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
