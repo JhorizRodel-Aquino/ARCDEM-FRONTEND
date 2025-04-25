@@ -291,6 +291,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
   if (ID === openedMarkId) return;
   if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
   openedMarkId = ID;
+  console.log(ID);
   markers[`assID-${ID}`].openPopup();
   const detailsElement = document.querySelector(".details");
   if (detailsElement) detailsElement.remove();
@@ -978,7 +979,7 @@ const closeMarkerDetails = async () => {
     }, 300);
   }
   sideGIS.classList.remove("open");
-  markers[`assID-${openedMarkId}`].closePopup();
+  if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
   openedMarkId = 0;
 };
 
@@ -986,7 +987,7 @@ const closeGroupDetails = async (ID, animate = false) => {
   let target = document.querySelector(".details");
   if (!target) return;
 
-  markers[`assID-${openedMarkId}`].closePopup();
+  if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
   openedMarkId = 0;
 
   if (animate) {

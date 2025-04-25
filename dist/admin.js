@@ -1,5 +1,5 @@
-const url = "http://192.168.68.100:5000";
-// const url = "https://api.arcdem.site";
+// const url = "http://192.168.68.121:5000";
+const url = "https://api.arcdem.site";
 
 let openedId = 0;
 let openedMarkId = 0;
@@ -198,6 +198,22 @@ const displayMarkers = async () => {
       e.originalEvent.stopPropagation();
       displayMarkersDetails(assessment.id, lat, lng);
       marker.openPopup();
+    });
+  });
+};
+
+const manageMarkers = async () => {
+  const assessments = await fetchAssessments();
+
+  assessments.forEach((assessment) => {
+    let lat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
+    let lng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
+
+    let marker = L.marker([lat, lng]).addTo(map);
+    markers[`assID-${assessment.id}`] = marker;
+    marker.on("click", (e) => {
+      e.originalEvent.stopPropagation();
+      manageMarkersDetails(assessment.id, lat, lng);
     });
   });
 };
@@ -730,10 +746,37 @@ const manageGroupDetails = async (ID) => {
 
   if (!modify.grp.includes(Number(ID))) {
     modify.grp.push(Number(ID));
-  } else {
-    // Reassign filtered result back to modify.grp
-    modify.grp = modify.grp.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
-  }
+
+    let children = select.querySelectorAll(".select");
+    children.forEach((child) => {
+      child.classList.remove(".selected");
+      let childId;
+      if (child.id.startsWith("grp")) {
+        childId = Number(child.id.replace("grp-", ""));
+        modify.grp = modify.grp.filter((item) => item !== Number(childId));
+      } else {
+        childId = Number(child.id.replace("ass-", ""));
+        modify.ass = modify.ass.filter((item) => item !== Number(childId));
+      }
+    });
+
+    let element = select.parentElement; // Start from the parent
+    while (element && element !== document.body) {
+      if (element.classList.contains("selection__wrapper")) break;
+
+      if (element.classList.contains("select")) {
+        element.classList.remove("selected");
+
+        let id = element.id;
+        if (id.startsWith("grp-")) {
+          const parentId = Number(id.replace("grp-", ""));
+          modify.grp = modify.grp.filter((item) => item !== parentId);
+        }
+      }
+
+      element = element.parentElement;
+    }
+  } else modify.grp = modify.grp.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
 
   console.log(modify);
 
@@ -751,6 +794,23 @@ const manageMarkersDetails = async (ID, lat, lng) => {
   select.classList.toggle("selected");
   if (!modify.ass.includes(Number(ID))) {
     modify.ass.push(Number(ID));
+
+    let element = select.parentElement; // Start from the parent
+    while (element && element !== document.body) {
+      if (element.classList.contains("selection__wrapper")) break;
+
+      if (element.classList.contains("select")) {
+        element.classList.remove("selected");
+
+        let id = element.id;
+        if (id.startsWith("grp-")) {
+          const parentId = Number(id.replace("grp-", ""));
+          modify.grp = modify.grp.filter((item) => item !== parentId);
+        }
+      }
+
+      element = element.parentElement;
+    }
   } else modify.ass = modify.ass.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
 
   console.log(modify);
@@ -769,21 +829,6 @@ const updateList = async () => {
   };
   removeSelected();
   resetMarkerColors();
-  modify.ass.forEach((ID) => {
-    const select = document.getElementById(`ass-${ID}`);
-    const child = select.querySelector(".select--child");
-    const textP = select.querySelector(".select--text p");
-
-    child.classList.add("selected");
-    textP.classList.add("selected");
-
-    textP.style.userSelect = "none";
-    textP.style.webkitUserSelect = "none";
-    textP.style.mozUserSelect = "none";
-
-    const marker = markers[`assID-${ID}`];
-    marker.setIcon(yellowMark);
-  });
 
   modify.grp.forEach((ID) => {
     const select = document.getElementById(`grp-${ID}`);
@@ -800,6 +845,22 @@ const updateList = async () => {
     if (select.classList.contains("selected")) {
       zoomBasedOnGroup(ID);
     } else resetMarkerColors();
+  });
+
+  modify.ass.forEach((ID) => {
+    const select = document.getElementById(`ass-${ID}`);
+    const child = select.querySelector(".select--child");
+    const textP = select.querySelector(".select--text p");
+
+    child.classList.add("selected");
+    textP.classList.add("selected");
+
+    textP.style.userSelect = "none";
+    textP.style.webkitUserSelect = "none";
+    textP.style.mozUserSelect = "none";
+
+    const marker = markers[`assID-${ID}`];
+    marker.setIcon(yellowMark);
   });
 };
 
@@ -832,7 +893,13 @@ async function createHorizontalCrackChart() {
     const labels = data.map((d) => d.group_name);
     const values = data.map((d) => d.weighted_crack_score_per_meter);
 
-    const ctx = document.getElementById("crackChart").getContext("2d");
+    let ctx;
+    try {
+      ctx = document.getElementById("crackChart").getContext("2d");
+    } catch {
+      return;
+    }
+
     new Chart(ctx, {
       type: "bar",
       data: {
@@ -841,8 +908,8 @@ async function createHorizontalCrackChart() {
           {
             label: "Weighted Crack Score per Meter",
             data: values,
-            backgroundColor: "rgba(255, 99, 132, 0.6)",
-            borderColor: "rgba(255, 99, 132, 1)",
+            backgroundColor: "rgba(210, 183, 70, 0.6)", // Primary color with opacity
+            borderColor: "rgba(210, 183, 70, 1)", // Primary color
             borderWidth: 1,
           },
         ],
@@ -852,18 +919,45 @@ async function createHorizontalCrackChart() {
         responsive: true,
         maintainAspectRatio: false, // allows full container size
         scales: {
-
+          x: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: "rgba(210, 183, 70, 0.1)", // Light primary color for grid
+            },
+            ticks: {
+              color: "#666", // Darker color for better readability
+            },
+          },
+          y: {
+            grid: {
+              display: true,
+              color: "rgba(210, 183, 70, 0.1)", // Light primary color for grid
+            },
+            ticks: {
+              color: "#666", // Darker color for better readability
+            },
+          },
         },
         elements: {
           bar: {
-            barThickness: 25, // ✅ fixed bar "height" (since it's horizontal)
+            barThickness: 25, // fixed bar "height" (since it's horizontal)
             maxBarThickness: 30, // Optional: limit max
           },
         },
         plugins: {
           title: {
             display: true,
-            text: "Road Repair Priority by Group (Horizontal)",
+            text: "Road Repair Priority by Group",
+            color: "#333", // Dark color for title
+            font: {
+              size: 16,
+              weight: "bold",
+            },
+            padding: {
+              top: 10,
+              bottom: 20,
+            },
           },
           tooltip: {
             callbacks: {
@@ -871,6 +965,29 @@ async function createHorizontalCrackChart() {
                 return `Score: ${context.parsed.x.toFixed(2)}`;
               },
             },
+            backgroundColor: "rgba(210, 183, 70, 0.9)", // Primary color for tooltip
+            titleColor: "#fff",
+            bodyColor: "#fff",
+            padding: 10,
+            cornerRadius: 6,
+          },
+          legend: {
+            display: true,
+            position: "bottom",
+            labels: {
+              color: "#666",
+              font: {
+                size: 12,
+              },
+            },
+          },
+        },
+        layout: {
+          padding: {
+            left: 15,
+            right: 25,
+            top: 15,
+            bottom: 15,
           },
         },
       },
@@ -894,7 +1011,7 @@ const dashboard = async (self) => {
   const mainPanel = document.querySelector(".mainPanel");
   mainPanel.innerHTML = `
           <div
-            class="dashboard h-full w-full mx-auto grid grid-cols-3 grid-rows-2 gap-5"
+            class="dashboard h-full w-full mx-auto grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-2 gap-5"
           >
             <div
               class="selection bg-white h-full w-full rounded-xl flex flex-col overflow-hidden"
@@ -915,14 +1032,14 @@ const dashboard = async (self) => {
                 <h2>Top Places With Most Cracks</h2>
               </div>
 
-              <div id="chartContainer" class="w-full h-vh relative">
+              <div id="chartContainer" class="w-full h-full relative">
                 <canvas id="crackChart" class="w-full h-full"></canvas>
               </div>
 
             </div>
 
             <div
-              class="detail bg-white h-full w-full rounded-xl col-start-2 row-start-1 row-span-2 overflow-hidden"
+              class="detail bg-white h-full w-full rounded-xl lg:col-start-2 lg:row-start-1 lg:row-span-2 overflow-hidden"
             >
               <div class="yellow-part admined detailTop" id="toggle-2">
                 <h2>Details</h2>
@@ -1006,7 +1123,7 @@ const dashboard = async (self) => {
             </div>
 
             <div
-              class="map bg-white h-full w-full rounded-xl overflow-hidden col-start-3 row-start-1 row-span-2"
+              class="map bg-white h-full w-full rounded-xl overflow-hidden lg:col-start-3 lg:row-start-1 lg:row-span-2"
             >
               <div id="map" class="w-full h-full z-10"></div>
             </div>
@@ -1015,9 +1132,9 @@ const dashboard = async (self) => {
 
   initMap();
 
-  await displayAll();
-  await displayMarkers();
+  displayAll();
   createHorizontalCrackChart();
+  displayMarkers();
 };
 
 const manage = async (self) => {
@@ -1034,27 +1151,13 @@ const manage = async (self) => {
               <div
                 class="yellow-part admined flex justify-between mx-5 gap-10"
                 id="toggle-2"
-              >
-                <a class="btn primary" onclick="deleteSelected()">Delete</a>
+              > <a class="btn primary" onclick="groupSelected()">Group</a>
+              <a class="btn primary" onclick="ungroupSelected()">Ungroup</a>
+                <a class="btn red" onclick="deleteSelected()">Delete</a>
               </div>
 
-              <div class="selection__wrapper overflow-x-auto flex-1 ml-5 mr-5">
-                <div class="select">
-                  <span class="select--trigger"><small>&#8250;</small></span>
-                  <div class="select--text">
-                    <p class="flex justify-between items-center gap-2 group">
-                      Calabarzon
-                      <img
-                        class="hidden group-hover:block"
-                        src="../img/edit.png"
-                        alt=""
-                      />
-                    </p>
-                    <div class="select--child">
-                      <div class="select--content"></div>
-                    </div>
-                  </div>
-                </div>
+              <div id="grp-0" class="selection__wrapper grp overflow-x-auto flex-1 ml-5 mr-5">
+                
               </div>
             </div>
 
@@ -1067,7 +1170,7 @@ const manage = async (self) => {
   initMap();
 
   await manageAll();
-  await displayMarkers();
+  await manageMarkers();
 };
 
 const deleteSelected = async () => {
@@ -1088,7 +1191,7 @@ const deleteSelected = async () => {
       };
 
       try {
-        const response = await fetch(`${url}/delete_selected`, {
+        const response = await fetch(`${url}/delete`, {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
@@ -1098,7 +1201,7 @@ const deleteSelected = async () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log(data.message); // Success message from server
+          console.log(data); // Success message from server
 
           // Reset modify arrays and update the UI
           modify.grp = [];
@@ -1127,4 +1230,230 @@ const deleteSelected = async () => {
   });
 };
 
-dashboard(document.getElementById("initial"));
+// Helper to find top-most parent group (excluding document body)
+const getTopGroup = (el) => {
+  let current = el;
+  let lastGroup = null;
+  let check = 0;
+  let checking = true;
+  while (current && current !== document.body && checking) {
+    if (current.classList.contains("grp")) {
+      if (check > 1) checking = false;
+      lastGroup = current;
+    }
+    current = current.parentElement;
+
+    check++;
+  }
+  return lastGroup ? lastGroup.id : null;
+};
+
+const groupSelected = async () => {
+  const nameModal = document.getElementById("groupNameModal");
+  const nameInput = document.getElementById("groupNameInput");
+  const confirmGroupBtn = document.getElementById("confirmGroupBtn");
+  const cancelGroupBtn = document.getElementById("cancelGroupBtn");
+
+  // Warning Modal elements
+  const warningModal = document.getElementById("warningModal");
+  const warningMessage = document.getElementById("warningMessage");
+  const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+  const selectedGroups = modify.grp;
+  const selectedAssessments = modify.ass;
+
+  // Validation: Check if both groups and assessments are selected
+  if (selectedGroups.length > 0 && selectedAssessments.length > 0) {
+    warningMessage.textContent =
+      "You cannot group both groups and assessments at the same time.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  // Validation: Check if neither groups nor assessments are selected
+  if (selectedGroups.length === 0 && selectedAssessments.length === 0) {
+    warningMessage.textContent =
+      "Please select groups or assessments to group.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  const items = selectedGroups.length ? selectedGroups : selectedAssessments;
+  const type = selectedGroups.length ? "grp" : "ass";
+  const prefix = type === "grp" ? "grp-" : "ass-";
+
+  // Check if all items share the same top-level group
+  const topLevel = new Set();
+  items.forEach((id) => {
+    const el = document.getElementById(`${prefix}${id}`);
+    const topGroup = getTopGroup(el);
+    if (topGroup) topLevel.add(topGroup);
+  });
+
+  console.log("topLevel", topLevel);
+  // Validation: Check if the selected items belong to the same group
+  if (topLevel.size > 1) {
+    warningMessage.textContent =
+      "Selected items are not from the same top-level group. Please select items from the same group.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  // Show the modal for the group name input
+  nameModal.classList.remove("hidden");
+  nameModal.classList.add("flex");
+
+  return new Promise((resolve, reject) => {
+    confirmGroupBtn.onclick = async () => {
+      const groupName = nameInput.value.trim();
+      if (!groupName) {
+        warningMessage.textContent = "Please enter a group name.";
+        warningModal.classList.remove("hidden");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${url}/group`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: groupName,
+            groups: selectedGroups,
+            assessments: selectedAssessments,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data);
+
+          modify.grp = [];
+          modify.ass = [];
+          nameInput.value = "";
+          updateList();
+        } else {
+          const data = await response.json();
+          warningMessage.textContent = `Error: ${data.error}`;
+          warningModal.classList.remove("hidden");
+        }
+      } catch (error) {
+        console.error("Error grouping selected:", error);
+        warningMessage.textContent = "An error occurred while grouping.";
+        warningModal.classList.remove("hidden");
+      }
+
+      nameModal.classList.add("hidden");
+      resolve();
+    };
+
+    cancelGroupBtn.onclick = () => {
+      nameModal.classList.add("hidden");
+      reject("Grouping cancelled");
+    };
+  });
+};
+
+const ungroupSelected = async () => {
+  const warningModal = document.getElementById("warningModal");
+  const warningMessage = document.getElementById("warningMessage");
+
+  const selectedGroups = modify.grp;
+  const selectedAssessments = modify.ass;
+
+  // Check if assessments are selected — not allowed
+  if (selectedAssessments.length > 0) {
+    warningMessage.textContent =
+      "You cannot ungroup selected assessments. Only groups can be ungrouped.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  // Check if no group is selected
+  if (selectedGroups.length === 0) {
+    warningMessage.textContent = "Please select a group to ungroup.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  // Only allow one group to be ungrouped at a time
+  if (selectedGroups.length > 1) {
+    warningMessage.textContent = "You can only ungroup one group at a time.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  const groupId = selectedGroups[0];
+
+  try {
+    const response = await fetch(`${url}/ungroup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ group_id: groupId }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(data);
+      modify.grp = [];
+      updateList();
+    } else {
+      const data = await response.json();
+      warningMessage.textContent = `Error: ${data.error}`;
+      warningModal.classList.remove("hidden");
+    }
+  } catch (error) {
+    console.error("Error ungrouping:", error);
+    warningMessage.textContent = "An error occurred while ungrouping.";
+    warningModal.classList.remove("hidden");
+  }
+};
+
+const closeWarning = async () => {
+  document.getElementById("warningModal").classList.add("hidden");
+};
+
+// Function to fetch admin profile data
+async function fetchAdminProfile() {
+  try {
+    const token = localStorage.getItem("adminToken");
+
+    if (!token) {
+      console.error("No authentication token found");
+      return null;
+    }
+
+    const response = await fetch("http://localhost:5000/admin/profile", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.status === 401) {
+      console.error("Authentication failed or token expired");
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return null;
+  }
+}
+
+const init = async () => {
+  dashboard(document.getElementById("initial"));
+  const profile = await fetchAdminProfile();
+  document.getElementById("adminEmail").innerHTML = `${profile.email}`
+};
+
+init();
