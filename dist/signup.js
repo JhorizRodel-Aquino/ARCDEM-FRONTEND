@@ -1,4 +1,5 @@
-const url = "http://127.0.0.1:5000";
+// const url = "http://127.0.0.1:5000";
+const url = "https://api.arcdem.site";
 let shouldRedirect = false; 
 
 const signup = async (event) => {
