@@ -1,5 +1,39 @@
 // const url = "http://192.168.68.121:5000";
-const url = "https://api.arcdem.site";
+// const url = "https://api.arcdem.site";
+const url = "http://127.0.0.1:5000";
+
+const validateTokenWithBackend = async (token) => {
+  try {
+    const response = await fetch(`${url}/authenticate`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`, // Send token as Authorization header
+      },
+    });
+
+    const data = await response.json();
+    if (response.ok && response.status == 200) {
+      console.log("Token is valid, ", data.response);
+      return;
+    } else {
+      console.log("Token is invalid or expired");
+      // Show error or redirect to login page
+      window.location.href = "login.html";
+    }
+  } catch (error) {
+    console.error("Error validating token: ", error);
+    // Handle any errors
+  }
+};
+
+const adminToken = localStorage.getItem("adminToken");
+if (adminToken) {
+  validateTokenWithBackend(adminToken);
+} else {
+  window.location.href = "login.html";
+}
+
+let relogin = false;
 
 let openedId = 0;
 let openedMarkId = 0;
@@ -108,24 +142,49 @@ const initMap = () => {
 
   map.on("click", () => {
     if (openedMarkId) {
-      closeMarkerDetails();
+      closeMarkers();
     }
   });
 };
 
-// const navs = document.querySelectorAll(".profile--nav a");
+// ---------------------------------------------------------------------------------------
+const logout = async () => {
+  const logoutModal = document.getElementById("logoutModal");
+  const confirmLogoutBtn = document.getElementById("confirmLogoutBtn");
+  const cancelLogoutBtn = document.getElementById("cancelLogoutBtn");
 
-// navs.forEach((nav) => {
-//   nav.addEventListener("click", () => {
-//     navs.forEach((n) => n.classList.remove("open"));
-//     nav.classList.add("open");
-//   });
-// });
+  logoutModal.classList.remove("hidden");
+
+  return new Promise((resolve, reject) => {
+    confirmLogoutBtn.onclick = async () => {
+      logoutModal.classList.add("hidden");
+      localStorage.removeItem("adminToken");
+      window.location.href = "index.html";
+      resolve();
+    };
+
+    cancelLogoutBtn.onclick = () => {
+      logoutModal.classList.add("hidden");
+      reject();
+    };
+  });
+};
+// ------------------------------------------ //
 
 const fetchGroup = async (param, relation = "") => {
   try {
-    let link = `${url}/group/${param}`;
+    const token = localStorage.getItem("adminToken");
+    const warningModal = document.getElementById("warningModal");
+    const warningMessage = document.getElementById("warningMessage");
+    const closeWarningBtn = document.getElementById("closeWarningBtn");
 
+    if (!token) {
+      console.error("No authentication token found");
+      window.location.href = "login.html";
+      return null;
+    }
+
+    let link;
     if (relation === "") {
       link = `${url}/group/${param}`;
     } else {
@@ -135,9 +194,21 @@ const fetchGroup = async (param, relation = "") => {
     const response = await fetch(link, {
       method: "GET",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
+
+    if (response.status === 401) {
+      relogin = true;
+      localStorage.removeItem("adminToken");
+      console.error("Authentication failed or token expired");
+      warningMessage.textContent =
+        "Your session has expired. Please log in again to continue.";
+      closeWarningBtn.textContent = "Log in";
+      warningModal.classList.remove("hidden");
+      return null;
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -154,6 +225,17 @@ const fetchGroup = async (param, relation = "") => {
 
 const fetchAssessments = async (assessID, cracks = false) => {
   try {
+    const token = localStorage.getItem("adminToken");
+    const warningModal = document.getElementById("warningModal");
+    const warningMessage = document.getElementById("warningMessage");
+    const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+    if (!token) {
+      console.error("No authentication token found");
+      window.location.href = "login.html";
+      return null;
+    }
+
     let link;
     if (cracks) link = `${url}/assessment/${assessID}/cracks`;
     else link = `${url}/assessments`;
@@ -161,9 +243,21 @@ const fetchAssessments = async (assessID, cracks = false) => {
     const response = await fetch(link, {
       method: "GET",
       headers: {
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
+
+    if (response.status === 401) {
+      relogin = true;
+      localStorage.removeItem("adminToken");
+      console.error("Authentication failed or token expired");
+      warningMessage.textContent =
+        "Your session has expired. Please log in again to continue.";
+      closeWarningBtn.textContent = "Log in";
+      warningModal.classList.remove("hidden");
+      return null;
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
@@ -176,6 +270,380 @@ const fetchAssessments = async (assessID, cracks = false) => {
     console.error("Error fetching assessment:", error);
     return [];
   }
+};
+
+const fetchAll = async () => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const warningModal = document.getElementById("warningModal");
+    const warningMessage = document.getElementById("warningMessage");
+    const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+    if (!token) {
+      console.error("No authentication token found");
+      window.location.href = "login.html";
+      return null;
+    }
+
+    const response = await fetch(`${url}/group/descendants`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.status === 401) {
+      relogin = true;
+      localStorage.removeItem("adminToken");
+      console.error("Authentication failed or token expired");
+      warningMessage.textContent =
+        "Your session has expired. Please log in again to continue.";
+      closeWarningBtn.textContent = "Log in";
+      warningModal.classList.remove("hidden");
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Fetched All:", data);
+    return data;
+  } catch (error) {
+    console.error("Error fetching group:", error);
+    return [];
+  }
+};
+
+const fetchAdmins = async () => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const warningModal = document.getElementById("warningModal");
+    const warningMessage = document.getElementById("warningMessage");
+    const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+    if (!token) {
+      console.error("No authentication token found");
+      window.location.href = "login.html";
+      return null;
+    }
+
+    const response = await fetch(`${url}/admins`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.status === 401) {
+      relogin = true;
+      localStorage.removeItem("adminToken");
+      console.error("Authentication failed or token expired");
+      warningMessage.textContent =
+        "Your session has expired. Please log in again to continue.";
+      closeWarningBtn.textContent = "Log in";
+      warningModal.classList.remove("hidden");
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    return null;
+  }
+};
+
+const fetchProfile = async () => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const warningModal = document.getElementById("warningModal");
+    const warningMessage = document.getElementById("warningMessage");
+    const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+    if (!token) {
+      console.error("No authentication token found");
+      window.location.href = "login.html";
+      return null;
+    }
+
+    const response = await fetch(`${url}/profile`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.status === 401) {
+      relogin = true;
+      localStorage.removeItem("adminToken");
+      console.error("Authentication failed or token expired");
+      warningMessage.textContent =
+        "Your session has expired. Please log in again to continue.";
+      closeWarningBtn.textContent = "Log in";
+      warningModal.classList.remove("hidden");
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    return null;
+  }
+};
+
+// ------------------------------------------ //
+
+const displayGroupDetails = async (ID, detail = true) => {
+  if (openedId === ID) return;
+
+  if (detail) {
+    const details = await fetchGroup(ID);
+
+    const detailWrapper = document.querySelector(".detail__wrapper");
+    detailWrapper.innerHTML = "";
+    detailWrapper.innerHTML += `
+      <div class="yellow-part admined border-0 base change" id="toggle-2">
+        <span class="pin_loc flex gap-1 items-center">
+          <img src="/img/pin-loc.png" alt="" />
+          <h3 class="not-italic">${details.name}</h3>
+        </span>
+      </div>
+
+      <div class="detailedInfo detail__admin change" id="details-2">
+        <div class="detailedInfos__wrapper">
+          <div class="detailed-info admined">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/length.png" alt="" />
+              <p class="font-bold">Length of Road Monitored:</p>
+            </span>
+            <p class="pl-[56px]">${details.n_assess * 5}m</p>
+          </div>
+          <div class="detailed-info admined">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/lanes.png" alt="" />
+              <p class="font-bold">Number of Assessments:</p>
+            </span>
+            <p class="pl-[56px]">${details.n_assess}</p>
+          </div>
+          <div class="detailed-info admined">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/cracks-detected.png" alt="" />
+              <p class="font-bold">Types of Cracks Detected:</p>
+            </span>
+            <span class="grid gap-2">
+              <p class="pl-[56px]">Transverse Cracks (${
+                details.n_cracks.trans
+              })</p>
+              <p class="pl-[56px]">Longitudinal Cracks (${
+                details.n_cracks.longi
+              })</p>
+              <p class="pl-[56px]">Multiple Cracks (${
+                details.n_cracks.multi
+              })</p>
+            </span>
+          </div>
+          <div class="detailed-info admined">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/total-crack.png" alt="" />
+              <p class="font-bold">Total Number of Cracks:</p>
+            </span>
+            <p class="pl-[56px]">${
+              details.n_cracks.trans +
+              details.n_cracks.longi +
+              details.n_cracks.multi
+            }</p>
+          </div>
+          <div class="detailed-info admined">
+            <span class="flex gap-[15px] items-center">
+              <img src="/img/date.png" alt="" />
+              <p class="font-bold">Date Last Updated:</p>
+            </span>
+            <p class="pl-[56px]">${details.date}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  zoomBasedOnGroup(ID);
+
+  openedId = ID;
+
+  if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
+
+  let select = document.getElementById(`grp-${ID}`);
+  const child = select.querySelector(".select--child");
+  const textP = select.querySelector(".select--text p");
+
+  const removeSelected = () => {
+    document.querySelectorAll(".select--child").forEach((el) => {
+      el.classList.remove("selected");
+    });
+    document.querySelectorAll(".select--text p").forEach((el) => {
+      el.classList.remove("selected");
+    });
+  };
+
+  removeSelected();
+  child.classList.add("selected");
+  textP.classList.add("selected");
+
+  textP.style.userSelect = "none";
+  textP.style.webkitUserSelect = "none";
+  textP.style.mozUserSelect = "none";
+};
+
+const displayMarkersDetails = async (ID, lat, lng, detail = true) => {
+  if (ID === openedMarkId) return;
+  console.log(`assID-${openedMarkId}`);
+  if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
+  resetMarkerColors();
+  openedMarkId = ID;
+  markers[`assID-${ID}`].openPopup();
+
+  let focus = [];
+  mark = markers[`assID-${ID}`];
+  focus.push(mark);
+  mark.setIcon(yellowMark);
+  zoomToPoints(focus);
+
+  if (detail) {
+    const assessCracks = await fetchAssessments(ID, (cracks = true));
+
+    lat = lat.toFixed(6);
+    lng = lng.toFixed(6);
+
+    const detailWrapper = document.querySelector(".detail__wrapper");
+    detailWrapper.innerHTML = "";
+    detailWrapper.innerHTML += `
+      <div class="yellow-part admined border-0 change" id="toggle-2">
+        <span class="pin_loc flex gap-1 items-center">
+          <img src="/img/pin-loc.png" alt="" />
+          <h3 class="not-italic">${lat}, ${lng}</h3>
+        </span>
+      </div>
+
+
+      <div id="crackContainer" class="overflow-y-auto detail__admin change">
+        
+      </div>
+    `;
+
+    let index = 0;
+    const crackContainer = document.getElementById("crackContainer");
+    crackContainer.innerHTML = "";
+
+    const formattedDate = new Date(assessCracks.date)
+      .toLocaleString("en-CA", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+        timeZone: "UTC",
+      })
+      .replace(",", "");
+    crackContainer.innerHTML += `
+          <div class="detailed-info admined">
+            <span class="flex gap-[15px] items-center">
+              <h4 class="font-bold">${formattedDate}</h4>
+            </span>
+          </div>      
+        `;
+    assessCracks.cracks.forEach((crack) => {
+      index++;
+      crackContainer.innerHTML += `
+          <div class="detailed-info admined">
+            <span class="flex gap-[15px] items-center">
+              <p class="font-bold">Crack ${index}</p>
+            </span>
+            <p class="pl-6"><span class="font-bold">Type: </span>${crack.crack_type}</p>
+            <p class="pl-6"><span class="font-bold">Severity: </span>${crack.crack_severity}</p>
+            <p class="pl-6" id="endCrack-${index}"><span class="font-bold">Length: </span>${crack.crack_length}m</p>
+          </div>
+        `;
+
+      let solution;
+      if (
+        crack.crack_type == "transverse" ||
+        (crack.crack_type == "longitudinal" && crack.crack_severity == "narrow")
+      ) {
+        solution = "Grooving and Sealing";
+      } else if (
+        crack.crack_type == "transverse" ||
+        (crack.crack_type == "longitudinal" && crack.crack_severity == "wide")
+      ) {
+        solution = "Stitch Repair";
+      } else {
+        solution = "Reblocking";
+      }
+      const endCrack = document.getElementById(`endCrack-${index}`);
+      if (crack.crack_type.toLowerCase() === "multiple") {
+        endCrack.insertAdjacentHTML(
+          "afterend",
+          `
+            <p class="pl-6"><span class="font-bold">Affected Area: </span>${
+              crack.crack_width * crack.crack_length
+            }m<sup>2</sup></p>
+            <p class="pl-6"><span class="font-bold">Width: </span>${
+              crack.crack_width
+            }m</p>
+            <p class="pl-6"><span class="font-bold">Recommended Solution: </span>${solution}</p>
+          `
+        );
+      } else if (
+        crack.crack_type.toLowerCase() === "longitudinal" ||
+        crack.crack_type.toLowerCase() === "transverse"
+      ) {
+        endCrack.insertAdjacentHTML(
+          "afterend",
+          `
+            <p class="pl-6"><span class="font-bold">Recommended Solution: </span>${solution}</p>
+          `
+        );
+      }
+    });
+
+    let filename = `${url}/image/${assessCracks.filename}.jpg`;
+    crackContainer.innerHTML += `<img src="${filename}" class="object-fit p-5" />`;
+  }
+
+  let select = document.getElementById(`ass-${ID}`);
+  const child = select.querySelector(".select--child");
+  const textP = select.querySelector(".select--text p");
+
+  const removeSelected = () => {
+    document.querySelectorAll(".select--child").forEach((el) => {
+      el.classList.remove("selected");
+    });
+    document.querySelectorAll(".select--text p").forEach((el) => {
+      el.classList.remove("selected");
+    });
+  };
+
+  removeSelected();
+  child.classList.add("selected");
+  textP.classList.add("selected");
+
+  textP.style.userSelect = "none";
+  textP.style.webkitUserSelect = "none";
+  textP.style.mozUserSelect = "none";
 };
 
 const displayMarkers = async () => {
@@ -202,51 +670,10 @@ const displayMarkers = async () => {
   });
 };
 
-const manageMarkers = async () => {
-  const assessments = await fetchAssessments();
-
-  assessments.forEach((assessment) => {
-    let lat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
-    let lng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
-
-    let marker = L.marker([lat, lng]).addTo(map);
-    markers[`assID-${assessment.id}`] = marker;
-    marker.on("click", (e) => {
-      e.originalEvent.stopPropagation();
-      manageMarkersDetails(assessment.id, lat, lng);
-    });
-  });
-};
-
-function zoomToPoints(markers) {
-  const group = new L.featureGroup(markers);
-  map.fitBounds(group.getBounds(), {
-    padding: [50, 50], // adds 100px padding on all sides, feels like zooming out
-  });
-}
-
-const fetchAll = async () => {
-  try {
-    let link = `${url}/group/descendants`;
-
-    const response = await fetch(link, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("Fetched All:", data);
-    return data;
-  } catch (error) {
-    console.error("Error fetching group:", error);
-    return [];
-  }
+const closeMarkers = async () => {
+  markers[`assID-${openedMarkId}`].closePopup();
+  markers[`assID-${openedMarkId}`].setIcon(blueMark);
+  openedMarkId = 0;
 };
 
 const displayAll = async () => {
@@ -352,6 +779,139 @@ const displayAll = async () => {
       const lat = parseFloat(ass.dataset.lat);
       const lng = parseFloat(ass.dataset.lng);
       displayMarkersDetails(id, lat, lng);
+    });
+  });
+};
+
+const displayAdmins = async () => {
+  const admins = await fetchAdmins();
+
+  let manage = document.querySelector(".manage");
+  manage.innerHTML = "";
+  admins.forEach((admin) => {
+    manage.innerHTML += `
+    <div id="profile" class="profile w-full grid grid-flow-col grid-cols-[auto_1fr_.5fr_.5fr] justify-items-start items-center gap-4 border-b-dark/25 border-b-2 py-5 bg-white rounded-lg px-5">
+      <span class="overflow-hidden w-10 md:w-16 lg:w-20 object-cover"><img src="../img/admin.png" alt="" class="w-full h-full object-cover"></span>
+
+      <div class="profile--text grid justify-items-start items-center">
+        <h2>${admin.username}</h2>
+        <p class="text-wrap break-all">${admin.email}</p>
+      </div>
+
+      <p id="status" class="justify-self-start">Status: ${admin.status}</p>
+
+      <div id="adminBtns-${admin.id}" class="grid grid-flow-col gap-2 justify-self-end">
+
+      </div>
+    </div>    
+  `;
+
+    let adminBtns = document.getElementById(`adminBtns-${admin.id}`);
+    if (admin.status == "Pending") {
+      adminBtns.innerHTML += `
+        <a class="btn accept" onclick="updateAdminStatus(${admin.id}, 'Active')">Accept</a>
+        <a class="btn reject" onclick="removeAdmin(${admin.id})">Reject</a>
+      `;
+    } else if (admin.status == "Active" || admin.status == "Rejected") {
+      adminBtns.innerHTML += `
+        <a class="btn reject" onclick="removeAdmin(${admin.id})">Remove</a>
+      `;
+    }
+  });
+};
+
+// ------------------------------------------ //
+
+const manageGroupDetails = async (ID) => {
+  let select = document.getElementById(`grp-${ID}`);
+  select.classList.toggle("selected");
+
+  if (!modify.grp.includes(Number(ID))) {
+    modify.grp.push(Number(ID));
+
+    let children = select.querySelectorAll(".select");
+    children.forEach((child) => {
+      child.classList.remove(".selected");
+      let childId;
+      if (child.id.startsWith("grp")) {
+        childId = Number(child.id.replace("grp-", ""));
+        modify.grp = modify.grp.filter((item) => item !== Number(childId));
+      } else {
+        childId = Number(child.id.replace("ass-", ""));
+        modify.ass = modify.ass.filter((item) => item !== Number(childId));
+      }
+    });
+
+    let element = select.parentElement; // Start from the parent
+    while (element && element !== document.body) {
+      if (element.classList.contains("selection__wrapper")) break;
+
+      if (element.classList.contains("select")) {
+        element.classList.remove("selected");
+
+        let id = element.id;
+        if (id.startsWith("grp-")) {
+          const parentId = Number(id.replace("grp-", ""));
+          modify.grp = modify.grp.filter((item) => item !== parentId);
+        }
+      }
+
+      element = element.parentElement;
+    }
+  } else modify.grp = modify.grp.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
+
+  console.log(modify);
+
+  updateList();
+};
+
+const manageMarkersDetails = async (ID, lat, lng) => {
+  let focus = [];
+  mark = markers[`assID-${ID}`];
+  focus.push(mark);
+
+  zoomToPoints(focus);
+
+  let select = document.getElementById(`ass-${ID}`);
+  select.classList.toggle("selected");
+  if (!modify.ass.includes(Number(ID))) {
+    modify.ass.push(Number(ID));
+
+    let element = select.parentElement; // Start from the parent
+    while (element && element !== document.body) {
+      if (element.classList.contains("selection__wrapper")) break;
+
+      if (element.classList.contains("select")) {
+        element.classList.remove("selected");
+
+        let id = element.id;
+        if (id.startsWith("grp-")) {
+          const parentId = Number(id.replace("grp-", ""));
+          modify.grp = modify.grp.filter((item) => item !== parentId);
+        }
+      }
+
+      element = element.parentElement;
+    }
+  } else modify.ass = modify.ass.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
+
+  console.log(modify);
+
+  updateList();
+};
+
+const manageMarkers = async () => {
+  const assessments = await fetchAssessments();
+
+  assessments.forEach((assessment) => {
+    let lat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
+    let lng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
+
+    let marker = L.marker([lat, lng]).addTo(map);
+    markers[`assID-${assessment.id}`] = marker;
+    marker.on("click", (e) => {
+      e.originalEvent.stopPropagation();
+      manageMarkersDetails(assessment.id, lat, lng);
     });
   });
 };
@@ -477,149 +1037,390 @@ const manageAll = async () => {
   });
 };
 
-const displayMarkersDetails = async (ID, lat, lng, detail = true) => {
-  if (ID === openedMarkId) return;
-  console.log(`assID-${openedMarkId}`);
-  if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
-  resetMarkerColors();
-  openedMarkId = ID;
-  markers[`assID-${ID}`].openPopup();
+// ------------------------------------------ //
 
-  let focus = [];
-  mark = markers[`assID-${ID}`];
-  focus.push(mark);
-  mark.setIcon(yellowMark);
-  zoomToPoints(focus);
+const groupSelected = async () => {
+  const token = localStorage.getItem("adminToken");
+  const warningModal = document.getElementById("warningModal");
+  const warningMessage = document.getElementById("warningMessage");
+  const closeWarningBtn = document.getElementById("closeWarningBtn");
 
-  if (detail) {
-    const assessCracks = await fetchAssessments(ID, true);
-
-    lat = lat.toFixed(6);
-    lng = lng.toFixed(6);
-
-    const detailWrapper = document.querySelector(".detail__wrapper");
-    detailWrapper.innerHTML = "";
-    detailWrapper.innerHTML += `
-      <div class="yellow-part admined border-0 change" id="toggle-2">
-        <span class="pin_loc flex gap-1 items-center">
-          <img src="/img/pin-loc.png" alt="" />
-          <h3 class="not-italic">${lat}, ${lng}</h3>
-        </span>
-      </div>
-
-
-      <div id="crackContainer" class="overflow-y-auto detail__admin change">
-        
-      </div>
-    `;
-
-    let index = 0;
-    const crackContainer = document.getElementById("crackContainer");
-    crackContainer.innerHTML = "";
-
-    const formattedDate = new Date(assessCracks.date)
-      .toLocaleString("en-CA", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-        timeZone: "UTC",
-      })
-      .replace(",", "");
-    crackContainer.innerHTML += `
-          <div class="detailed-info admined">
-            <span class="flex gap-[15px] items-center">
-              <h4 class="font-bold">${formattedDate}</h4>
-            </span>
-          </div>      
-        `;
-    assessCracks.cracks.forEach((crack) => {
-      index++;
-      crackContainer.innerHTML += `
-          <div class="detailed-info admined">
-            <span class="flex gap-[15px] items-center">
-              <p class="font-bold">Crack ${index}</p>
-            </span>
-            <p class="pl-6"><span class="font-bold">Type: </span>${crack.crack_type}</p>
-            <p class="pl-6"><span class="font-bold">Severity: </span>${crack.crack_severity}</p>
-            <p class="pl-6" id="endCrack-${index}"><span class="font-bold">Length: </span>${crack.crack_length}m</p>
-          </div>
-        `;
-
-      let solution;
-      if (
-        crack.crack_type == "transverse" ||
-        (crack.crack_type == "longitudinal" && crack.crack_severity == "narrow")
-      ) {
-        solution = "Grooving and Sealing";
-      } else if (
-        crack.crack_type == "transverse" ||
-        (crack.crack_type == "longitudinal" && crack.crack_severity == "wide")
-      ) {
-        solution = "Stitch Repair";
-      } else {
-        solution = "Reblocking";
-      }
-      const endCrack = document.getElementById(`endCrack-${index}`);
-      if (crack.crack_type.toLowerCase() === "multiple") {
-        endCrack.insertAdjacentHTML(
-          "afterend",
-          `
-            <p class="pl-6"><span class="font-bold">Affected Area: </span>${
-              crack.crack_width * crack.crack_length
-            }m<sup>2</sup></p>
-            <p class="pl-6"><span class="font-bold">Width: </span>${
-              crack.crack_width
-            }m</p>
-            <p class="pl-6"><span class="font-bold">Recommended Solution: </span>${solution}</p>
-          `
-        );
-      } else if (
-        crack.crack_type.toLowerCase() === "longitudinal" ||
-        crack.crack_type.toLowerCase() === "transverse"
-      ) {
-        endCrack.insertAdjacentHTML(
-          "afterend",
-          `
-            <p class="pl-6"><span class="font-bold">Recommended Solution: </span>${solution}</p>
-          `
-        );
-      }
-    });
-
-    let filename = `${url}/image/${assessCracks.filename}.jpg`;
-    crackContainer.innerHTML += `<img src="${filename}" class="object-fit p-5" />`;
+  if (!token) {
+    console.error("No authentication token found");
+    window.location.href = "login.html";
+    return null;
   }
 
-  let select = document.getElementById(`ass-${ID}`);
-  const child = select.querySelector(".select--child");
-  const textP = select.querySelector(".select--text p");
+  const nameModal = document.getElementById("groupNameModal");
+  const nameInput = document.getElementById("groupNameInput");
+  const confirmGroupBtn = document.getElementById("confirmGroupBtn");
+  const cancelGroupBtn = document.getElementById("cancelGroupBtn");
 
-  const removeSelected = () => {
-    document.querySelectorAll(".select--child").forEach((el) => {
-      el.classList.remove("selected");
-    });
-    document.querySelectorAll(".select--text p").forEach((el) => {
-      el.classList.remove("selected");
-    });
-  };
+  const selectedGroups = modify.grp;
+  const selectedAssessments = modify.ass;
 
-  removeSelected();
-  child.classList.add("selected");
-  textP.classList.add("selected");
+  // Validation: Check if both groups and assessments are selected
+  if (selectedGroups.length > 0 && selectedAssessments.length > 0) {
+    warningMessage.textContent =
+      "You cannot group both groups and assessments at the same time.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
 
-  textP.style.userSelect = "none";
-  textP.style.webkitUserSelect = "none";
-  textP.style.mozUserSelect = "none";
+  // Validation: Check if neither groups nor assessments are selected
+  if (selectedGroups.length === 0 && selectedAssessments.length === 0) {
+    warningMessage.textContent =
+      "Please select groups or assessments to group.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  const items = selectedGroups.length ? selectedGroups : selectedAssessments;
+  const type = selectedGroups.length ? "grp" : "ass";
+  const prefix = type === "grp" ? "grp-" : "ass-";
+
+  // Check if all items share the same top-level group
+  const topLevel = new Set();
+  items.forEach((id) => {
+    const el = document.getElementById(`${prefix}${id}`);
+    const topGroup = getTopGroup(el);
+    if (topGroup) topLevel.add(topGroup);
+  });
+
+  console.log("topLevel", topLevel);
+  // Validation: Check if the selected items belong to the same group
+  if (topLevel.size > 1) {
+    warningMessage.textContent =
+      "Selected items are not from the same top-level group. Please select items from the same group.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  // Show the modal for the group name input
+  nameModal.classList.remove("hidden");
+  nameModal.classList.add("flex");
+
+  return new Promise((resolve, reject) => {
+    confirmGroupBtn.onclick = async () => {
+      const groupName = nameInput.value.trim();
+      if (!groupName) {
+        warningMessage.textContent = "Please enter a group name.";
+        warningModal.classList.remove("hidden");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${url}/group`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: groupName,
+            groups: selectedGroups,
+            assessments: selectedAssessments,
+          }),
+        });
+
+        if (response.status === 401) {
+          relogin = true;
+          localStorage.removeItem("adminToken");
+          console.error("Authentication failed or token expired");
+          warningMessage.textContent =
+            "Your session has expired. Please log in again to continue.";
+          closeWarningBtn.textContent = "Log in";
+          warningModal.classList.remove("hidden");
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data);
+
+        modify.grp = [];
+        modify.ass = [];
+        nameInput.value = "";
+        updateList();
+        manageAll();
+        manageMarkers();
+      } catch (error) {
+        console.error("Error grouping selected:", error);
+        warningMessage.textContent = "An error occurred while grouping.";
+        warningModal.classList.remove("hidden");
+      }
+
+      nameModal.classList.add("hidden");
+      resolve();
+    };
+
+    cancelGroupBtn.onclick = () => {
+      nameModal.classList.add("hidden");
+      reject("Grouping cancelled");
+    };
+  });
 };
+
+const ungroupSelected = async () => {
+  const token = localStorage.getItem("adminToken");
+  const warningModal = document.getElementById("warningModal");
+  const warningMessage = document.getElementById("warningMessage");
+  const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+  if (!token) {
+    console.error("No authentication token found");
+    window.location.href = "login.html";
+    return null;
+  }
+
+  const selectedGroups = modify.grp;
+  const selectedAssessments = modify.ass;
+
+  // Check if assessments are selected — not allowed
+  if (selectedAssessments.length > 0) {
+    warningMessage.textContent =
+      "You cannot ungroup selected assessments. Only groups can be ungrouped.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  // Check if no group is selected
+  if (selectedGroups.length === 0) {
+    warningMessage.textContent = "Please select a group to ungroup.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  // Only allow one group to be ungrouped at a time
+  if (selectedGroups.length > 1) {
+    warningMessage.textContent = "You can only ungroup one group at a time.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  const groupId = selectedGroups[0];
+
+  try {
+    const response = await fetch(`${url}/ungroup`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ group_id: groupId }),
+    });
+
+    if (response.status === 401) {
+      relogin = true;
+      localStorage.removeItem("adminToken");
+      console.error("Authentication failed or token expired");
+      warningMessage.textContent =
+        "Your session has expired. Please log in again to continue.";
+      closeWarningBtn.textContent = "Log in";
+      warningModal.classList.remove("hidden");
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+    modify.grp = [];
+    updateList();
+    manageAll();
+    manageMarkers();
+  } catch (error) {
+    console.error("Error ungrouping:", error);
+    warningMessage.textContent = "An error occurred while ungrouping.";
+    warningModal.classList.remove("hidden");
+  }
+};
+
+const deleteSelected = async () => {
+  const token = localStorage.getItem("adminToken");
+  const warningModal = document.getElementById("warningModal");
+  const warningMessage = document.getElementById("warningMessage");
+  const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+  if (!token) {
+    console.error("No authentication token found");
+    window.location.href = "login.html";
+    return null;
+  }
+
+  const modal = document.getElementById("confirmationModal");
+  const confirmBtn = document.getElementById("confirmDeleteBtn");
+  const cancelBtn = document.getElementById("cancelDeleteBtn");
+
+  // Show modal with Tailwind classes for visibility
+  modal.classList.remove("hidden");
+
+  // Wait for user response (resolve/reject based on user choice)
+  return new Promise((resolve, reject) => {
+    confirmBtn.onclick = async () => {
+      const selectedData = {
+        groups: modify.grp,
+        assessments: modify.ass,
+      };
+
+      try {
+        const response = await fetch(`${url}/delete`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(selectedData),
+        });
+
+        if (response.status === 401) {
+          relogin = true;
+          localStorage.removeItem("adminToken");
+          console.error("Authentication failed or token expired");
+          warningMessage.textContent =
+            "Your session has expired. Please log in again to continue.";
+          closeWarningBtn.textContent = "Log in";
+          warningModal.classList.remove("hidden");
+          return null;
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(data); // Success message from server
+
+        // Reset modify arrays and update the UI
+        modify.grp = [];
+        modify.ass = [];
+        updateList(); // Update the UI (clear selected states)
+      } catch (error) {
+        console.error("Error deleting selected:", error);
+        alert("An error occurred while deleting.");
+      }
+
+      // Close the modal after the deletion
+      modal.classList.add("hidden");
+      resolve(); // Resolve promise indicating deletion completed
+    };
+
+    cancelBtn.onclick = () => {
+      // Close the modal without deleting
+      modal.classList.add("hidden");
+      reject("Deletion cancelled"); // Reject promise indicating cancellation
+    };
+  });
+};
+
+const updateAdminStatus = async (ID, statusUpdate) => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const warningModal = document.getElementById("warningModal");
+    const warningMessage = document.getElementById("warningMessage");
+    const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+    if (!token) {
+      console.error("No authentication token found");
+      window.location.href = "login.html";
+      return null;
+    }
+
+    const response = await fetch(`${url}/admin/${ID}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ statusUpdate }),
+    });
+
+    if (response.status === 401) {
+      relogin = true;
+      localStorage.removeItem("adminToken");
+      console.error("Authentication failed or token expired");
+      warningMessage.textContent =
+        "Your session has expired. Please log in again to continue.";
+      closeWarningBtn.textContent = "Log in";
+      warningModal.classList.remove("hidden");
+      return null;
+    }
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.log(data.error);
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    console.log(data.response);
+    displayAdmins();
+  } catch (error) {
+    console.error("Error removing admin:", error);
+  }
+};
+
+const removeAdmin = async (ID) => {
+  try {
+    const token = localStorage.getItem("adminToken");
+    const warningModal = document.getElementById("warningModal");
+    const warningMessage = document.getElementById("warningMessage");
+    const closeWarningBtn = document.getElementById("closeWarningBtn");
+
+    if (!token) {
+      console.error("No authentication token found");
+      window.location.href = "login.html";
+      return null;
+    }
+
+    const response = await fetch(`${url}/admin/${ID}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (response.status === 401) {
+      relogin = true;
+      localStorage.removeItem("adminToken");
+      console.error("Authentication failed or token expired");
+      warningMessage.textContent =
+        "Your session has expired. Please log in again to continue.";
+      closeWarningBtn.textContent = "Log in";
+      warningModal.classList.remove("hidden");
+      return null;
+    }
+
+    const data = await response.json();
+    if (!response.ok) {
+      console.log(data.error);
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    console.log(data.response);
+    displayAdmins();
+  } catch (error) {
+    console.error("Error removing admin:", error);
+  }
+};
+
+// ------------------------------------------ //
 
 const resetMarkerColors = () => {
   const marks = Object.values(markers); // Assuming 'markers' is an object of marker instances
   marks.forEach((mark) => {
     mark.setIcon(blueMark); // Use the built-in Leaflet default icon
+  });
+};
+
+const zoomToPoints = (markers) => {
+  const group = new L.featureGroup(markers);
+  map.fitBounds(group.getBounds(), {
+    padding: [50, 50], // adds 100px padding on all sides, feels like zooming out
   });
 };
 
@@ -640,185 +1441,7 @@ const resetZoom = () => {
   map.setView([12.8797, 121.774], 6); // Center of the Philippines, Zoom level 6
 };
 
-const displayGroupDetails = async (ID, detail = true) => {
-  if (openedId === ID) return;
-
-  if (detail) {
-    const details = await fetchGroup(ID);
-
-    const detailWrapper = document.querySelector(".detail__wrapper");
-    detailWrapper.innerHTML = "";
-    detailWrapper.innerHTML += `
-      <div class="yellow-part admined border-0 base change" id="toggle-2">
-        <span class="pin_loc flex gap-1 items-center">
-          <img src="/img/pin-loc.png" alt="" />
-          <h3 class="not-italic">${details.name}</h3>
-        </span>
-      </div>
-
-      <div class="detailedInfo detail__admin change" id="details-2">
-        <div class="detailedInfos__wrapper">
-          <div class="detailed-info admined">
-            <span class="flex gap-[15px] items-center">
-              <img src="/img/length.png" alt="" />
-              <p class="font-bold">Length of Road Monitored:</p>
-            </span>
-            <p class="pl-[56px]">${details.n_assess * 5}m</p>
-          </div>
-          <div class="detailed-info admined">
-            <span class="flex gap-[15px] items-center">
-              <img src="/img/lanes.png" alt="" />
-              <p class="font-bold">Number of Assessments:</p>
-            </span>
-            <p class="pl-[56px]">${details.n_assess}</p>
-          </div>
-          <div class="detailed-info admined">
-            <span class="flex gap-[15px] items-center">
-              <img src="/img/cracks-detected.png" alt="" />
-              <p class="font-bold">Types of Cracks Detected:</p>
-            </span>
-            <span class="grid gap-2">
-              <p class="pl-[56px]">Transverse Cracks (${
-                details.n_cracks.trans
-              })</p>
-              <p class="pl-[56px]">Longitudinal Cracks (${
-                details.n_cracks.longi
-              })</p>
-              <p class="pl-[56px]">Multiple Cracks (${
-                details.n_cracks.multi
-              })</p>
-            </span>
-          </div>
-          <div class="detailed-info admined">
-            <span class="flex gap-[15px] items-center">
-              <img src="/img/total-crack.png" alt="" />
-              <p class="font-bold">Total Number of Cracks:</p>
-            </span>
-            <p class="pl-[56px]">${
-              details.n_cracks.trans +
-              details.n_cracks.longi +
-              details.n_cracks.multi
-            }</p>
-          </div>
-          <div class="detailed-info admined">
-            <span class="flex gap-[15px] items-center">
-              <img src="/img/date.png" alt="" />
-              <p class="font-bold">Date Last Updated:</p>
-            </span>
-            <p class="pl-[56px]">${details.date}</p>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  zoomBasedOnGroup(ID);
-
-  openedId = ID;
-
-  if (openedMarkId !== 0) markers[`assID-${openedMarkId}`].closePopup();
-
-  let select = document.getElementById(`grp-${ID}`);
-  const child = select.querySelector(".select--child");
-  const textP = select.querySelector(".select--text p");
-
-  const removeSelected = () => {
-    document.querySelectorAll(".select--child").forEach((el) => {
-      el.classList.remove("selected");
-    });
-    document.querySelectorAll(".select--text p").forEach((el) => {
-      el.classList.remove("selected");
-    });
-  };
-
-  removeSelected();
-  child.classList.add("selected");
-  textP.classList.add("selected");
-
-  textP.style.userSelect = "none";
-  textP.style.webkitUserSelect = "none";
-  textP.style.mozUserSelect = "none";
-};
-
-const manageGroupDetails = async (ID) => {
-  let select = document.getElementById(`grp-${ID}`);
-  select.classList.toggle("selected");
-
-  if (!modify.grp.includes(Number(ID))) {
-    modify.grp.push(Number(ID));
-
-    let children = select.querySelectorAll(".select");
-    children.forEach((child) => {
-      child.classList.remove(".selected");
-      let childId;
-      if (child.id.startsWith("grp")) {
-        childId = Number(child.id.replace("grp-", ""));
-        modify.grp = modify.grp.filter((item) => item !== Number(childId));
-      } else {
-        childId = Number(child.id.replace("ass-", ""));
-        modify.ass = modify.ass.filter((item) => item !== Number(childId));
-      }
-    });
-
-    let element = select.parentElement; // Start from the parent
-    while (element && element !== document.body) {
-      if (element.classList.contains("selection__wrapper")) break;
-
-      if (element.classList.contains("select")) {
-        element.classList.remove("selected");
-
-        let id = element.id;
-        if (id.startsWith("grp-")) {
-          const parentId = Number(id.replace("grp-", ""));
-          modify.grp = modify.grp.filter((item) => item !== parentId);
-        }
-      }
-
-      element = element.parentElement;
-    }
-  } else modify.grp = modify.grp.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
-
-  console.log(modify);
-
-  updateList();
-};
-
-const manageMarkersDetails = async (ID, lat, lng) => {
-  let focus = [];
-  mark = markers[`assID-${ID}`];
-  focus.push(mark);
-
-  zoomToPoints(focus);
-
-  let select = document.getElementById(`ass-${ID}`);
-  select.classList.toggle("selected");
-  if (!modify.ass.includes(Number(ID))) {
-    modify.ass.push(Number(ID));
-
-    let element = select.parentElement; // Start from the parent
-    while (element && element !== document.body) {
-      if (element.classList.contains("selection__wrapper")) break;
-
-      if (element.classList.contains("select")) {
-        element.classList.remove("selected");
-
-        let id = element.id;
-        if (id.startsWith("grp-")) {
-          const parentId = Number(id.replace("grp-", ""));
-          modify.grp = modify.grp.filter((item) => item !== parentId);
-        }
-      }
-
-      element = element.parentElement;
-    }
-  } else modify.ass = modify.ass.filter((item) => item !== Number(ID)); // Remove child group from modify.grp
-
-  console.log(modify);
-
-  updateList();
-};
-
-const updateList = async () => {
+const updateList = () => {
   const removeSelected = () => {
     document.querySelectorAll(".select--child").forEach((el) => {
       el.classList.remove("selected");
@@ -864,22 +1487,24 @@ const updateList = async () => {
   });
 };
 
-// const displayDetails = async (param) => {
-//   if (param.startsWith("grp-")) {
-//     const id = param.replace("grp-", "");
-//     console.log(`Group ID: ${id}`);
-//     // Fetch/display more data for the group if needed
-//   } else if (param.startsWith("ass-")) {
-//     const id = param.replace("ass-", "");
-//     console.log(`Assessment ID: ${id}`);
-//     displayMarkersDetails(id, lat, lng);
-//     // Fetch/display more data for the assessment if needed
-//   } else {
-//     console.log("Unknown ID:", param);
-//   }
-// };
+const getTopGroup = (el) => {
+  let current = el;
+  let lastGroup = null;
+  let check = 0;
+  let checking = true;
+  while (current && current !== document.body && checking) {
+    if (current.classList.contains("grp")) {
+      if (check > 1) checking = false;
+      lastGroup = current;
+    }
+    current = current.parentElement;
 
-async function createHorizontalCrackChart() {
+    check++;
+  }
+  return lastGroup ? lastGroup.id : null;
+};
+
+const createHorizontalCrackChart = async () => {
   try {
     const response = await fetch(`${url}/priority_scores`);
     const data = await response.json();
@@ -995,13 +1620,15 @@ async function createHorizontalCrackChart() {
   } catch (error) {
     console.error("Error creating horizontal crack chart:", error);
   }
-}
-
-const closeMarkerDetails = async () => {
-  markers[`assID-${openedMarkId}`].closePopup();
-  markers[`assID-${openedMarkId}`].setIcon(blueMark);
-  openedMarkId = 0;
 };
+
+const closeWarning = async () => {
+  document.getElementById("warningModal").classList.add("hidden");
+
+  if (relogin) window.location.href = "login.html";
+};
+
+// ------------------------------------------ //
 
 const dashboard = async (self) => {
   const navs = document.querySelectorAll(".profile--nav a");
@@ -1011,7 +1638,7 @@ const dashboard = async (self) => {
   const mainPanel = document.querySelector(".mainPanel");
   mainPanel.innerHTML = `
           <div
-            class="dashboard h-full w-full mx-auto grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-2 gap-5"
+            class="dashboard h-full w-full mx-auto grid grid-rows-[auto_70dvh_auto_auto] grid-cols-1 lg:grid-cols-3 lg:grid-rows-2 gap-5"
           >
             <div
               class="selection bg-white h-full w-full rounded-xl flex flex-col overflow-hidden"
@@ -1026,26 +1653,26 @@ const dashboard = async (self) => {
             </div>
 
             <div
-              class="graph bg-white h-full w-full rounded-xl overflow-hidden"
+              class="graph flex flex-col bg-white h-max lg:h-full w-full rounded-xl overflow-hidden row-start-1 lg:row-start-2"
             >
               <div class="yellow-part admined" id="toggle-2">
                 <h2>Top Places With Most Cracks</h2>
               </div>
 
-              <div id="chartContainer" class="w-full h-full relative">
-                <canvas id="crackChart" class="w-full h-full"></canvas>
+              <div id="chartContainer" class="w-full flex-1 overflow-hidden">
+                <canvas id="crackChart" class="w-full overflow-auto"></canvas>
               </div>
 
             </div>
 
             <div
-              class="detail bg-white h-full w-full rounded-xl lg:col-start-2 lg:row-start-1 lg:row-span-2 overflow-hidden"
+              class="detail bg-white flex flex-col h-full w-full rounded-xl lg:col-start-2 lg:row-start-1 lg:row-span-2 overflow-hidden"
             >
               <div class="yellow-part admined detailTop" id="toggle-2">
                 <h2>Details</h2>
               </div>
 
-              <div class="detail__wrapper overflow-y-auto h-full w-full">
+              <div class="detail__wrapper overflow-y-auto flex-1 w-full">
                 <div
                   class="yellow-part admined border-0 base change"
                   id="toggle-2"
@@ -1123,7 +1750,7 @@ const dashboard = async (self) => {
             </div>
 
             <div
-              class="map bg-white h-full w-full rounded-xl overflow-hidden lg:col-start-3 lg:row-start-1 lg:row-span-2"
+              class="map bg-white h-full w-full rounded-xl overflow-hidden lg:col-start-3 lg:row-start-1 lg:row-span-2 row-start-2"
             >
               <div id="map" class="w-full h-full z-10"></div>
             </div>
@@ -1135,6 +1762,11 @@ const dashboard = async (self) => {
   displayAll();
   createHorizontalCrackChart();
   displayMarkers();
+
+  const sidePanel = document.querySelector(".sidePanel");
+  const sidePanelBackdrop = document.querySelector(".sidePanel__backdrop");
+  sidePanel.classList.remove("open");
+  sidePanelBackdrop.classList.remove("open");
 };
 
 const manage = async (self) => {
@@ -1144,16 +1776,16 @@ const manage = async (self) => {
 
   const mainPanel = document.querySelector(".mainPanel");
   mainPanel.innerHTML = `
-          <div class="manage h-full w-full mx-auto grid grid-cols-2 gap-5">
+          <div class="manage h-full w-full mx-auto grid grid-cols-1 grid-rows-[auto_70dvh] lg:grid-rows-1 lg:grid-cols-2 gap-5">
             <div
               class="selection bg-white h-full w-full rounded-xl flex flex-col overflow-hidden"
             >
               <div
-                class="yellow-part admined flex justify-between mx-5 gap-10"
+                class="yellow-part admined flex justify-between w-full"
                 id="toggle-2"
-              > <a class="btn primary" onclick="groupSelected()">Group</a>
-              <a class="btn primary" onclick="ungroupSelected()">Ungroup</a>
-                <a class="btn red" onclick="deleteSelected()">Delete</a>
+              > <a class="btn primary w-[30%] px-0 text-center max-w-[200px]" onclick="groupSelected()">Group</a>
+              <a class="btn primary w-[30%] px-0 text-center max-w-[200px]" onclick="ungroupSelected()">Ungroup</a>
+                <a class="btn red w-[30%] px-0 text-center max-w-[200px]" onclick="deleteSelected()">Delete</a>
               </div>
 
               <div id="grp-0" class="selection__wrapper grp overflow-x-auto flex-1 ml-5 mr-5">
@@ -1169,291 +1801,84 @@ const manage = async (self) => {
 
   initMap();
 
-  await manageAll();
-  await manageMarkers();
+  manageAll();
+  manageMarkers();
+
+  const sidePanel = document.querySelector(".sidePanel");
+  const sidePanelBackdrop = document.querySelector(".sidePanel__backdrop");
+  sidePanel.classList.remove("open");
+  sidePanelBackdrop.classList.remove("open");
 };
 
-const deleteSelected = async () => {
-  // Show the confirmation modal
-  const modal = document.getElementById("confirmationModal");
-  const confirmBtn = document.getElementById("confirmDeleteBtn");
-  const cancelBtn = document.getElementById("cancelDeleteBtn");
+const admin = async (self) => {
+  const navs = document.querySelectorAll(".profile--nav a");
+  navs.forEach((n) => n.classList.remove("open"));
+  self.classList.add("open");
 
-  // Show modal with Tailwind classes for visibility
-  modal.classList.remove("hidden");
+  const mainPanel = document.querySelector(".mainPanel");
+  mainPanel.innerHTML = `
+    <div class="manage w-full mx-auto grid justify-items-center items-start gap-3">
+      
+    </div>
+  `;
 
-  // Wait for user response (resolve/reject based on user choice)
-  return new Promise((resolve, reject) => {
-    confirmBtn.onclick = async () => {
-      const selectedData = {
-        groups: modify.grp,
-        assessments: modify.ass,
-      };
+  displayAdmins();
 
-      try {
-        const response = await fetch(`${url}/delete`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(selectedData),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log(data); // Success message from server
-
-          // Reset modify arrays and update the UI
-          modify.grp = [];
-          modify.ass = [];
-          updateList(); // Update the UI (clear selected states)
-        } else {
-          const data = await response.json();
-          console.log(data.error); // Error message from server
-          alert(`Error: ${data.error}`);
-        }
-      } catch (error) {
-        console.error("Error deleting selected:", error);
-        alert("An error occurred while deleting.");
-      }
-
-      // Close the modal after the deletion
-      modal.classList.add("hidden");
-      resolve(); // Resolve promise indicating deletion completed
-    };
-
-    cancelBtn.onclick = () => {
-      // Close the modal without deleting
-      modal.classList.add("hidden");
-      reject("Deletion cancelled"); // Reject promise indicating cancellation
-    };
-  });
+  const sidePanel = document.querySelector(".sidePanel");
+  const sidePanelBackdrop = document.querySelector(".sidePanel__backdrop");
+  sidePanel.classList.remove("open");
+  sidePanelBackdrop.classList.remove("open");
 };
 
-// Helper to find top-most parent group (excluding document body)
-const getTopGroup = (el) => {
-  let current = el;
-  let lastGroup = null;
-  let check = 0;
-  let checking = true;
-  while (current && current !== document.body && checking) {
-    if (current.classList.contains("grp")) {
-      if (check > 1) checking = false;
-      lastGroup = current;
-    }
-    current = current.parentElement;
-
-    check++;
-  }
-  return lastGroup ? lastGroup.id : null;
-};
-
-const groupSelected = async () => {
-  const nameModal = document.getElementById("groupNameModal");
-  const nameInput = document.getElementById("groupNameInput");
-  const confirmGroupBtn = document.getElementById("confirmGroupBtn");
-  const cancelGroupBtn = document.getElementById("cancelGroupBtn");
-
-  // Warning Modal elements
-  const warningModal = document.getElementById("warningModal");
-  const warningMessage = document.getElementById("warningMessage");
-  const closeWarningBtn = document.getElementById("closeWarningBtn");
-
-  const selectedGroups = modify.grp;
-  const selectedAssessments = modify.ass;
-
-  // Validation: Check if both groups and assessments are selected
-  if (selectedGroups.length > 0 && selectedAssessments.length > 0) {
-    warningMessage.textContent =
-      "You cannot group both groups and assessments at the same time.";
-    warningModal.classList.remove("hidden");
-    return;
-  }
-
-  // Validation: Check if neither groups nor assessments are selected
-  if (selectedGroups.length === 0 && selectedAssessments.length === 0) {
-    warningMessage.textContent =
-      "Please select groups or assessments to group.";
-    warningModal.classList.remove("hidden");
-    return;
-  }
-
-  const items = selectedGroups.length ? selectedGroups : selectedAssessments;
-  const type = selectedGroups.length ? "grp" : "ass";
-  const prefix = type === "grp" ? "grp-" : "ass-";
-
-  // Check if all items share the same top-level group
-  const topLevel = new Set();
-  items.forEach((id) => {
-    const el = document.getElementById(`${prefix}${id}`);
-    const topGroup = getTopGroup(el);
-    if (topGroup) topLevel.add(topGroup);
-  });
-
-  console.log("topLevel", topLevel);
-  // Validation: Check if the selected items belong to the same group
-  if (topLevel.size > 1) {
-    warningMessage.textContent =
-      "Selected items are not from the same top-level group. Please select items from the same group.";
-    warningModal.classList.remove("hidden");
-    return;
-  }
-
-  // Show the modal for the group name input
-  nameModal.classList.remove("hidden");
-  nameModal.classList.add("flex");
-
-  return new Promise((resolve, reject) => {
-    confirmGroupBtn.onclick = async () => {
-      const groupName = nameInput.value.trim();
-      if (!groupName) {
-        warningMessage.textContent = "Please enter a group name.";
-        warningModal.classList.remove("hidden");
-        return;
-      }
-
-      try {
-        const response = await fetch(`${url}/group`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: groupName,
-            groups: selectedGroups,
-            assessments: selectedAssessments,
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log(data);
-
-          modify.grp = [];
-          modify.ass = [];
-          nameInput.value = "";
-          updateList();
-        } else {
-          const data = await response.json();
-          warningMessage.textContent = `Error: ${data.error}`;
-          warningModal.classList.remove("hidden");
-        }
-      } catch (error) {
-        console.error("Error grouping selected:", error);
-        warningMessage.textContent = "An error occurred while grouping.";
-        warningModal.classList.remove("hidden");
-      }
-
-      nameModal.classList.add("hidden");
-      resolve();
-    };
-
-    cancelGroupBtn.onclick = () => {
-      nameModal.classList.add("hidden");
-      reject("Grouping cancelled");
-    };
-  });
-};
-
-const ungroupSelected = async () => {
-  const warningModal = document.getElementById("warningModal");
-  const warningMessage = document.getElementById("warningMessage");
-
-  const selectedGroups = modify.grp;
-  const selectedAssessments = modify.ass;
-
-  // Check if assessments are selected — not allowed
-  if (selectedAssessments.length > 0) {
-    warningMessage.textContent =
-      "You cannot ungroup selected assessments. Only groups can be ungrouped.";
-    warningModal.classList.remove("hidden");
-    return;
-  }
-
-  // Check if no group is selected
-  if (selectedGroups.length === 0) {
-    warningMessage.textContent = "Please select a group to ungroup.";
-    warningModal.classList.remove("hidden");
-    return;
-  }
-
-  // Only allow one group to be ungrouped at a time
-  if (selectedGroups.length > 1) {
-    warningMessage.textContent = "You can only ungroup one group at a time.";
-    warningModal.classList.remove("hidden");
-    return;
-  }
-
-  const groupId = selectedGroups[0];
-
-  try {
-    const response = await fetch(`${url}/ungroup`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ group_id: groupId }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      console.log(data);
-      modify.grp = [];
-      updateList();
-    } else {
-      const data = await response.json();
-      warningMessage.textContent = `Error: ${data.error}`;
-      warningModal.classList.remove("hidden");
-    }
-  } catch (error) {
-    console.error("Error ungrouping:", error);
-    warningMessage.textContent = "An error occurred while ungrouping.";
-    warningModal.classList.remove("hidden");
-  }
-};
-
-const closeWarning = async () => {
-  document.getElementById("warningModal").classList.add("hidden");
-};
-
-// Function to fetch admin profile data
-async function fetchAdminProfile() {
-  try {
-    const token = localStorage.getItem("adminToken");
-
-    if (!token) {
-      console.error("No authentication token found");
-      return null;
-    }
-
-    const response = await fetch("http://localhost:5000/admin/profile", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response.status === 401) {
-      console.error("Authentication failed or token expired");
-      return null;
-    }
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error fetching profile:", error);
-    return null;
-  }
-}
+// ------------------------------------------ //
 
 const init = async () => {
   dashboard(document.getElementById("initial"));
-  const profile = await fetchAdminProfile();
-  document.getElementById("adminEmail").innerHTML = `${profile.email}`
+  const profile = await fetchProfile();
+  document.getElementById("profile").innerHTML = `
+      <span
+        class="overflow-hidden w-20 object-cover"
+        ><img
+          src="../img/admin.png"
+          alt=""
+          class="w-full h-full object-cover"
+      /></span>
+
+      <div class="profile--text grid justify-items-start items-center">
+        <h2>${profile.username}</h2>
+        <p class="text-wrap break-all">${profile.email}</p>
+      </div>
+  `;
+
+  const adminPanelMenu = document.getElementById("adminPanel__menu");
+  const sidePanel = document.querySelector(".sidePanel");
+  const sidePanelBackdrop = document.querySelector(".sidePanel__backdrop");
+  adminPanelMenu.addEventListener("click", () => {
+    sidePanel.classList.toggle("open");
+    sidePanelBackdrop.classList.toggle("open");
+  });
+
+  document.addEventListener("click", (event) => {
+    const isClickInside =
+      sidePanel.contains(event.target) || adminPanelMenu.contains(event.target);
+
+    if (!isClickInside) {
+      sidePanel.classList.remove("open");
+      sidePanelBackdrop.classList.remove("open");
+    }
+  });
+
+  function resetOnSm(event) {
+    if (event.matches) {
+      sidePanel.classList.remove("open");
+      sidePanelBackdrop.classList.remove("open");
+    }
+  }
+  // Media query for 'sm' breakpoint (640px)
+  const smMediaQuery = window.matchMedia("(min-width: 640px)");
+  // Run on page load and when media query changes
+  resetOnSm(smMediaQuery);
+  smMediaQuery.addEventListener("change", resetOnSm);
 };
 
 init();

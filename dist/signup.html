@@ -4,38 +4,79 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="./output.css" rel="stylesheet" />
-    <title>Sign Up - ARCDEM</title>
+    <title>Sign Up</title>
+    <link rel="icon" type="image/png" href="../img/logo1.png">
   </head>
   <body>
-    <section>
-      <div class="login">
-        <div class="container">
-          <div class="login__wrapper w-[22rem] mx-auto mt-[8rem]">
-            <div class="login__logo grid place-items-center gap-2 mb-4">
-              <img src="/img/logo1.png" class="w-[4.5rem]" />
-              <h2>Sign Up to ARCDEM</h2>
-            </div>
-            <div class="login__input flex flex-col gap-4 border-[1.5px] p-[1.5rem] shadow-xl rounded-xl bg-gray-100 mb-[2rem]">
-              <div class="grid">
-                <label for="email"><p>Email</p></label>
-                <input name="email" id="email" type="email" />
-              </div>
-              <div class="grid">
-                <label for="password"><p>Password</p></label>
-                <input name="password" id="password" type="password" />
-              </div>
-              <div class="grid">
-                <label for="confirmPassword"><p>Confirm Password</p></label>
-                <input name="confirmPassword" id="confirmPassword" type="password" />
-              </div>
-              <button id="signupBtn" class="bg-primary p-1 mt-5 rounded-md border-[1px] text-light">Sign Up</button>
-              <h6 class="text-center">Already have an account? <a href="login.html" class="text-blue-500">Login here</a></h6>
-            </div>
-            <h6 class="text-gray-500 text-center">Copyright &copy; 2025 - ARCDEM</h6>
+    <section class="login h-dvh">
+      <div class="container h-full">
+        <div class="login__wrapper w-[22rem] mx-auto h-full flex flex-col justify-center">
+          <div class="login__logo grid place-items-center gap-2 mb-4">
+            <img src="/img/logo1.png" class="w-[4.5rem]" />
+            <h2>Sign Up to ARCDEM</h2>
           </div>
+          <form
+            id="signupForm"
+            class="login__input flex flex-col gap-4 border-[1.5px] p-[1.5rem] shadow-xl rounded-xl bg-gray-100 mb-[2rem]"
+            onsubmit="signup(event)"
+          >
+            <div class="grid">
+              <label for="username"><p>Username</p></label>
+              <input name="username" id="username" type="text" required minlength="2" maxlength="30"/>
+            </div>
+            <div class="grid">
+              <label for="email"><p>Email</p></label>
+              <input name="email" id="email" type="email" required />
+            </div>
+            <div class="grid">
+              <label for="password"><p>Password</p></label>
+              <input name="password" id="password" type="password" required />
+            </div>
+            <div class="grid">
+              <label for="confirmPassword"><p>Confirm Password</p></label>
+              <input
+                name="confirmPassword"
+                id="confirmPassword"
+                type="password"
+                required
+              />
+            </div>
+            <button
+              id="signupBtn"
+              type="submit"
+              class="bg-primary p-1 mt-5 rounded-md border-[1px] text-light"
+            >
+              Sign Up
+            </button>
+            <h6 class="text-center">
+              Already have an account?
+              <a href="login.html" class="text-blue-500">Login here</a>
+            </h6>
+          </form>
+          <h6 class="text-gray-500 text-center">
+            Copyright &copy; 2025 - ARCDEM
+          </h6>
         </div>
       </div>
     </section>
+
+    <div
+      id="warningModal"
+      class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50"
+    >
+      <div class="bg-white p-6 rounded-lg w-1/3">
+        <p id="warningMessage" class="text-center"></p>
+        <div class="mt-4 text-center">
+          <button
+            id="closeWarningBtn"
+            onclick="closeWarning()"
+            class="bg-gray-400 text-white px-4 py-2 rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
     <script src="signup.js"></script>
   </body>
 </html>

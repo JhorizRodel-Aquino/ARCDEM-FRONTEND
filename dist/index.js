@@ -1,6 +1,6 @@
 // const url = "http://192.168.68.116:5000";
 // const url = "http://127.0.0.1:5000";
-const url = "https://api.arcdem.site";
+const url = "http://127.0.0.1:5000";
 
 // const url = "https://roadtrack-test.onrender.com";
 
@@ -375,6 +375,12 @@ const displayMarkersDetails = async (ID, lat, lng) => {
       toggleButton.classList.add("pl-5");
     }
   }
+  // Media query for 'sm' breakpoint (640px)
+  const smMediaQuery = window.matchMedia("(min-width: 640px)");
+  // Run on page load and when media query changes
+  resetOnSm(smMediaQuery);
+  smMediaQuery.addEventListener("change", resetOnSm);
+  
   let crackDetails = document.getElementById("crackDetails");
   let index = 0;
 
@@ -427,7 +433,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
 
     if (crack.crack_type.toLowerCase() === "multiple") {
       affected.innerHTML = `<span class="font-bold">Affected Area: </span>${
-        crack.crack_width * crack.crack_length
+        (crack.crack_width * crack.crack_length).toFixed(3)
       }m<sup>2</sup>`;
       type.innerHTML = `<span class="font-bold">Width: </span>${crack.crack_width}m`;
     } else if (

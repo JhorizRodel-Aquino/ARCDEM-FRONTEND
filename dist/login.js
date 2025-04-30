@@ -1,49 +1,55 @@
-const url = "https://api.arcdem.site";
+const url = "http://127.0.0.1:5000";
 
-document.addEventListener("DOMContentLoaded", () => {
+const login = async (event) => {
+  event.preventDefault();
+
   const loginBtn = document.getElementById("loginBtn");
-  const emailInput = document.getElementById("email");
+  const emailOrUsernameInput = document.getElementById("emailOrUsername");
   const passwordInput = document.getElementById("password");
 
-  loginBtn.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
+  const warningModal = document.getElementById("warningModal");
+  const warningMessage = document.getElementById("warningMessage");
+  const closeWarningBtn = document.getElementById("closeWarningBtn");
 
-    // Basic validation
-    if (!email || !password) {
-      alert("Please fill in all fields");
-      return;
+  const emailOrUsername = emailOrUsernameInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  // Basic validation
+  if (!emailOrUsername || !password) {
+    warningMessage.textContent = "Please fill in all fields.";
+    warningModal.classList.remove("hidden");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${url}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        emailOrUsername,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      // Store the token in localStorage
+      localStorage.setItem("adminToken", data.token);
+
+      // Redirect to admin page
+      window.location.href = "admin.html";
+    } else {
+      warningMessage.textContent = data.response || "Log in failed.";
+      warningModal.classList.remove("hidden");
     }
-
-    try {
-      const response = await fetch(`${url}/admin/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store the token in localStorage
-        localStorage.setItem("adminToken", data.token);
-        localStorage.setItem("adminEmail", data.email);
-
-        // Redirect to admin page
-        window.location.href = "admin.html";
-      } else {
-        alert(data.message || "Login failed");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An error occurred during login");
-    }
-  });
+  } catch (error) {
+    console.error("Error:", error);
+    warningMessage.textContent = error || "An error occurred during sign up";
+    warningModal.classList.remove("hidden");
+  }
 
   // Allow form submission with Enter key
   passwordInput.addEventListener("keypress", (e) => {
@@ -51,4 +57,8 @@ document.addEventListener("DOMContentLoaded", () => {
       loginBtn.click();
     }
   });
-});
+};
+
+const closeWarning = async () => {
+  document.getElementById("warningModal").classList.add("hidden");
+};

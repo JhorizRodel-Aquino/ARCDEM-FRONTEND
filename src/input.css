@@ -49,7 +49,7 @@
     @apply lg:text-base md:text-sm text-xs;
   }
   h5,
-  .h5 {
+  .h5, .yellow-part.admined a {
     @apply lg:text-sm md:text-xs text-xs;
   }
   h6,
@@ -236,11 +236,30 @@
   /* ------------------------adminpage------------------- */
 
   .sidePanel {
-    @apply bg-light h-full lg:w-[25rem] xl:w-[30rem];
+    @apply bg-light h-full w-[15rem] md:w-[20rem] lg:w-[25rem] xl:w-[30rem] absolute top-0 left-[-100%] z-40 lg:relative duration-300 ease-in-out lg:left-0;
+  }
+  .sidePanel.open {
+    @apply left-0 duration-300 ease-in-out;
+  }
+
+  .sidePanel__backdrop {
+    @apply absolute left-0 top-0 w-full h-full bg-black bg-opacity-10 row-span-full hidden z-[35];
+  }
+
+  .sidePanel__backdrop.open {
+    @apply block lg:hidden;
+  }
+
+  .adminPanel__menu {
+    @apply grid gap-[2px] lg:hidden;
+  }
+
+  .adminPanel__menu span {
+    @apply inline-block w-7 h-[6px] bg-primary rounded-lg;
   }
 
   .mainPanel {
-    @apply bg-dark/5 mx-auto h-full w-full p-5 overflow-hidden;
+    @apply bg-dark/5 mx-auto min-h-dvh h-full w-full p-5 overflow-hidden;
   }
 
   /* .detail__wrapper div {
@@ -256,11 +275,11 @@
   } */
 
   .select--trigger {
-    @apply duration-200 ease-in-out w-4 mt-1 leading-none tracking-[0px] flex justify-center items-start cursor-pointer;
+    @apply duration-200 ease-in-out w-4 mt-[2px] lg:mt-1 leading-none tracking-[0px] flex justify-center items-start cursor-pointer;
   }
 
   .select--trigger small {
-    @apply p duration-200 ease-in-out z-40;
+    @apply lg:p duration-200 ease-in-out z-40 text-base;
   }
 
   .select--trigger.open small {
@@ -285,7 +304,7 @@
     @apply w-full z-20 relative mt-1;
   }
   .select--text p {
-    @apply rounded-md pr-5 w-max px-2 cursor-pointer;
+    @apply rounded-md pr-5 w-max px-2 cursor-pointer lg:py-0 py-[4px];
   }
   .select--text p.selected {
     @apply bg-primary hover:bg-primary;
@@ -301,24 +320,28 @@
   }
 
   .profile--nav a {
-    @apply py-[2px] px-5 w-full rounded-md;
+    @apply lg:py-[2px] px-5 w-full rounded-md py-[6px];
   }
   .profile--nav a.open {
     @apply bg-primary;
   }
 
   .btn {
-    @apply py-2 px-6 w-full text-center border-4 rounded-md inline-block  duration-300 ease-in-out text-dark; 
+    @apply  px-2 py-1 md:py-[6px] md:px-4 lg:py-2 lg:px-6 w-full text-center border-4 rounded-md inline-block  duration-300 ease-in-out text-dark;
   }
 
   .btn.primary {
     @apply bg-primary border-primary hover:bg-transparent hover:text-primary;
   }
+
+  .btn.accept {
+    @apply bg-primary border-primary hover:bg-transparent hover:border-green-500 hover:text-green-500;
+  }
+
   .btn.red {
     @apply bg-red-600 border-red-600 hover:bg-transparent hover:text-red-600 text-light;
   }
-  .btn.primary-outline {
-    @apply bg-transparent border-primary;
+  .btn.reject {
+    @apply bg-transparent border-primary text-primary hover:bg-transparent hover:border-red-600 hover:text-red-600;
   }
-  
 }

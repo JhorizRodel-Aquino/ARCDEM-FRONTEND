@@ -4,36 +4,68 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="./output.css" rel="stylesheet" />
-    <title>Login - ARCDEM</title>
+    <title>Log In</title>
+    <link rel="icon" type="image/png" href="../img/logo1.png" />
   </head>
   <body>
-    <section>
-      <div class="login">
-        <div class="container">
-          <!-- <div class="login__center min-h-screen grid place-items-center"> -->
-          <div class="login__wrapper w-[22rem] mx-auto mt-[8rem]">
-            <div class="login__logo grid place-items-center gap-2 mb-4">
-              <img src="/img/logo1.png" class="w-[4.5rem]" />
-              <h2>Login to ARCDEM</h2>
-            </div>
-            <div class="login__input flex flex-col gap-4 border-[1.5px] p-[1.5rem] shadow-xl rounded-xl bg-gray-100 mb-[2rem]">
-              <div class="grid">
-                <label for="email"><p>Email</p></label>
-                <input name="email" id="email" type="email" />
-              </div>
-              <div class="grid">
-                <label for="password"><p>Password</p></label>
-                <input name="password" id="password" type="password" />
-              </div>
-              <button id="loginBtn" class="bg-primary p-1 mt-5 rounded-md border-[1px] text-light">Login</button>
-              <h6 class="text-center">Don't have an account? <a href="signup.html" class="text-blue-500">Sign up here</a></h6>
-            </div>
-            <!-- </div> -->
-             <h6 class="text-gray-500 text-center">Copyright &copy; 2025 - ARCDEM</h6>
+    <section class="login h-dvh">
+      <div class="container h-full">
+        <div
+          class="login__wrapper w-[22rem] mx-auto h-full flex flex-col justify-center pb-[10rem]"
+        >
+          <div class="login__logo grid place-items-center gap-2 mb-4">
+            <img src="/img/logo1.png" class="w-[4.5rem]" />
+            <h2>Login to ARCDEM</h2>
           </div>
+          <form
+            onsubmit="login(event)"
+            class="login__input flex flex-col gap-4 border-[1.5px] p-[1.5rem] shadow-xl rounded-xl bg-gray-100 mb-[2rem]"
+          >
+            <div class="grid">
+              <label for="emailOrUsername"><p>Username or Email</p></label>
+              <input name="emailOrUsername" id="emailOrUsername" type="text" />
+            </div>
+            <div class="grid">
+              <label for="password"><p>Password</p></label>
+              <input name="password" id="password" type="password" />
+            </div>
+            <button
+              id="loginBtn"
+              class="bg-primary p-1 mt-5 rounded-md border-[1px] text-light"
+              type="submit"
+            >
+              Login
+            </button>
+            <h6 class="text-center">
+              Don't have an account?
+              <a href="signup.html" class="text-blue-500">Sign up here</a>
+            </h6>
+          </form>
+          <!-- </div> -->
+          <h6 class="text-gray-500 text-center">
+            Copyright &copy; 2025 - ARCDEM
+          </h6>
         </div>
       </div>
     </section>
+
+    <div
+      id="warningModal"
+      class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50"
+    >
+      <div class="bg-white p-6 rounded-lg w-1/3">
+        <p id="warningMessage" class="text-center"></p>
+        <div class="mt-4 text-center">
+          <button
+            id="closeWarningBtn"
+            onclick="closeWarning()"
+            class="bg-gray-400 text-white px-4 py-2 rounded-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
     <script src="login.js"></script>
   </body>
 </html>
