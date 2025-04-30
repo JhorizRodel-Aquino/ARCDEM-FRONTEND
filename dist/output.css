@@ -1364,6 +1364,12 @@ input:focus:focus{
   padding: 1.25rem;
 }
 
+@media (min-width: 1024px){
+  .mainPanel{
+    min-height: 100%;
+  }
+}
+
 /* .detail__wrapper div {
     @apply ;
   } */

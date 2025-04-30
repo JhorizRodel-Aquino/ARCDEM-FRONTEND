@@ -259,7 +259,7 @@
   }
 
   .mainPanel {
-    @apply bg-dark/5 mx-auto min-h-dvh h-full w-full p-5 overflow-hidden;
+    @apply bg-dark/5 mx-auto min-h-dvh lg:min-h-full h-full w-full p-5 overflow-hidden;
   }
 
   /* .detail__wrapper div {
