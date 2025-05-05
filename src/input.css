@@ -49,7 +49,9 @@
     @apply lg:text-base md:text-sm text-xs;
   }
   h5,
-  .h5, .yellow-part.admined a {
+  .h5,
+  .yellow-part.admined a,
+  .adminBtns a {
     @apply lg:text-sm md:text-xs text-xs;
   }
   h6,
@@ -236,7 +238,7 @@
   /* ------------------------adminpage------------------- */
 
   .sidePanel {
-    @apply bg-light h-full w-[15rem] md:w-[20rem] lg:w-[25rem] xl:w-[30rem] absolute top-0 left-[-100%] z-40 lg:relative duration-300 ease-in-out lg:left-0;
+    @apply bg-light h-full w-[15rem] md:w-[20rem] lg:w-[25rem] xl:w-[30rem] fixed lg:top-0 left-[-100%] z-40 lg:relative duration-300 ease-in-out lg:left-0;
   }
   .sidePanel.open {
     @apply left-0 duration-300 ease-in-out;
@@ -259,20 +261,8 @@
   }
 
   .mainPanel {
-    @apply bg-dark/5 mx-auto min-h-dvh lg:min-h-full h-full w-full p-5 overflow-hidden;
+    @apply bg-transparent lg:bg-dark/5 mx-auto lg:min-h-full h-full w-full p-5 overflow-hidden;
   }
-
-  /* .detail__wrapper div {
-    @apply ;
-  } */
-
-  /* .select--text {
-    @apply flex items-center;
-  } */
-
-  /* .selection__wrapper::after {
-    @apply content-[""] absolute inline-block top-0 left-0 h-full w-full bg-red-200 overflow-x-clip mx-5 z-[-1];
-  } */
 
   .select--trigger {
     @apply duration-200 ease-in-out w-4 mt-[2px] lg:mt-1 leading-none tracking-[0px] flex justify-center items-start cursor-pointer;
@@ -327,7 +317,7 @@
   }
 
   .btn {
-    @apply  px-2 py-1 md:py-[6px] md:px-4 lg:py-2 lg:px-6 w-full text-center border-4 rounded-md inline-block  duration-300 ease-in-out text-dark;
+    @apply px-2 py-1 md:py-[6px] md:px-4 lg:py-2 lg:px-6 w-full text-center border-4 rounded-md inline-block  duration-300 ease-in-out text-dark;
   }
 
   .btn.primary {

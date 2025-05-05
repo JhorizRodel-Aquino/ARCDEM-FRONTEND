@@ -47,10 +47,10 @@
     />
   </head>
 
-  <body class="bg-light h-dvh flex flex-col">
+  <body class="bg-light min-h-dvh lg:h-dvh flex flex-col">
     <!-- HEADER -->
     <header
-      class="header bg-light lg:py-6 md:py-5 sm:py-4 py-3 lg:px-10 md:px-7 px-5 relative w-full z-50 border-b-primary border-b-[10px]"
+      class="header bg-light lg:py-6 md:py-5 sm:py-4 py-3 lg:px-10 md:px-7 px-5 sticky top-0 w-full z-50 border-b-primary border-b-[10px]"
     >
       <div class="header__wrapper flex justify-between items-center">
         <div
@@ -62,7 +62,6 @@
           </h3>
         </div>
         <nav class="flex justify-center items-center gap-3">
-          <!-- <h4 class="underline italic">kin@gmail.com</h4> -->
           <a onclick="logout()"
             ><img src="/img/admin.png" alt="Admin" class="w-6 md:w-8 lg:w-10"
           /></a>
@@ -76,21 +75,8 @@
       </div>
     </header>
 
-    <!-- DASHBOARD -->
-    <!-- <section
-      class="dashboard flex-1 bg-light"
-    >
-      <div class="dashboard__wrapper grid grid-cols-[2fr_1fr] h-full w-full">
-        <div class="dashboard__info bg-black h-full w-full"></div>
-        <div class="dashboard__gis p-4">
-          <div class="bg-white h-full w-full rounded-xl shadow-lg overflow-hidden">
-            <div id="map" class="w-full h-full z-10 shadow-lg"></div>
-          </div>
-        </div>
-      </div>
-    </section> -->
-
-    <section class="admin lg:flex-1 bg-light lg:overflow-hidden relative">
+    <!-- ADMIN -->
+    <section class="admin h-full flex-1 bg-dark/5 lg:bg-light lg:overflow-hidden relative">
       <div class="admin__wrapper h-full w-full flex">
         <aside class="sidePanel">
           <div
@@ -112,44 +98,7 @@
           </div>
         </aside>
 
-        <div class="mainPanel">
-          <!-- <div class="manage h-full w-full mx-auto grid grid-cols-2 gap-5">
-            <div
-              class="selection bg-white h-full w-full rounded-xl flex flex-col overflow-hidden"
-            >
-              <div
-                class="yellow-part admined flex justify-between mx-5 gap-10"
-                id="toggle-2"
-              >
-                <a class="btn primary">Group</a
-                ><a class="btn primary">Delete</a>
-              </div>
-
-              <div class="selection__wrapper overflow-x-auto flex-1 ml-5 mr-5">
-                <div class="select">
-                  <span class="select--trigger"><small>&#8250;</small></span>
-                  <div class="select--text">
-                    <p class="flex justify-between items-center gap-2 group">
-                      Calabarzon
-                      <img
-                        class="hidden group-hover:block"
-                        src="../img/edit.png"
-                        alt=""
-                      />
-                    </p>
-                    <div class="select--child">
-                      <div class="select--content"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="map bg-white h-full w-full rounded-xl overflow-hidden">
-              <div id="map" class="w-full h-full z-10"></div>
-            </div>
-          </div> -->
-        </div>
+        <div class="mainPanel"></div>
 
         <div class="sidePanel__backdrop"></div>
       </div>
@@ -259,5 +208,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.20/jspdf.plugin.autotable.min.js"></script>
     <script src="admin.js"></script>
+    <script>
+      const adminPanelMenu = document.getElementById("adminPanel__menu");
+      const sidePanel = document.querySelector(".sidePanel");
+      const body = document.querySelector("body");
+      adminPanelMenu.addEventListener("click", () => {
+        body.classList.toggle("overflow-hidden");
+      });
+
+      document.addEventListener("click", (event) => {
+        const isClickInside =
+          sidePanel.contains(event.target) ||
+          adminPanelMenu.contains(event.target);
+
+        if (!isClickInside) {
+          body.classList.remove("overflow-hidden");
+        }
+      });
+
+      function resetOnSm(event) {
+        if (event.matches) {
+          body.classList.remove("overflow-hidden");
+        }
+      }
+      // Media query for 'sm' breakpoint (640px)
+      const smMediaQuery = window.matchMedia("(min-width: 640px)");
+      // Run on page load and when media query changes
+      resetOnSm(smMediaQuery);
+      smMediaQuery.addEventListener("change", resetOnSm);
+    </script>
   </body>
 </html>

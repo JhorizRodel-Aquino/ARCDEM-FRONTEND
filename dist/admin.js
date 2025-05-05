@@ -718,7 +718,16 @@ const displayAll = async () => {
       <div class="select grp" id="grp-${group.id}">
         <span class="select--trigger"><small>&#8250;</small></span>
         <div class="select--text">
-          <p>${group.name || "Unnamed Group"}</p>
+          <p class="flex justify-between items-center gap-2 group">${
+            group.name || "Unnamed Group"
+          }
+            <img
+              class="lg:hidden lg:group-hover:block w-[15px] h-[15px] lg:w-[20px] lg:h-[20px] opacity-40"
+              src="../img/download.png"
+              alt=""
+              onclick="downloadSummary(event, ${group.id})"
+            />
+          </p>
           <div class="select--child">
             <div class="select--content">
               ${childHTML}
@@ -790,7 +799,7 @@ const displayAdmins = async () => {
   manage.innerHTML = "";
   admins.forEach((admin) => {
     manage.innerHTML += `
-    <div id="profile" class="profile w-full grid grid-flow-col grid-cols-[auto_1fr_.5fr_.5fr] justify-items-start items-center gap-4 border-b-dark/25 border-b-2 py-5 bg-white rounded-lg px-5">
+    <div id="profile" class="profile w-full grid grid-flow-col grid-cols-[auto_1fr_.5fr_.5fr] justify-items-start items-center gap-4 border-b-dark/25 border-b-2 p-2 lg:p-5 bg-white rounded-lg">
       <span class="overflow-hidden w-10 md:w-16 lg:w-20 object-cover"><img src="../img/admin.png" alt="" class="w-full h-full object-cover"></span>
 
       <div class="profile--text grid justify-items-start items-center">
@@ -800,10 +809,10 @@ const displayAdmins = async () => {
 
       <p id="status" class="justify-self-start">Status: ${admin.status}</p>
 
-      <div id="adminBtns-${admin.id}" class="grid grid-flow-col gap-2 justify-self-end">
+      <div id="adminBtns-${admin.id}" class="adminBtns grid grid-flow-col gap-2 justify-self-end">
 
       </div>
-    </div>    
+    </div>       
   `;
 
     let adminBtns = document.getElementById(`adminBtns-${admin.id}`);
@@ -945,7 +954,7 @@ const manageAll = async () => {
                 <p class="flex justify-between items-center gap-2 group">
                   Assessment ${index}
                   <img
-                    class="hidden group-hover:block"
+                    class="hidden lg:group-hover:block"
                     src="../img/edit.png"
                     alt=""
                   />
@@ -968,7 +977,7 @@ const manageAll = async () => {
           <p class="flex justify-between items-center gap-2 group">
             ${group.name}
             <img
-              class="hidden group-hover:block"
+              class="hidden lg:group-hover:block"
               src="../img/edit.png"
               alt=""
             />
@@ -1673,59 +1682,7 @@ const dashboard = async (self) => {
               </div>
 
               <div class="detail__wrapper overflow-y-auto flex-1 w-full">
-                <div
-                  class="yellow-part admined border-0 base change"
-                  id="toggle-2"
-                >
-                  <span class="pin_loc flex gap-1 items-center">
-                    <img src="/img/pin-loc.png" alt="" />
-                    <h3 class="not-italic">no province</h3>
-                  </span>
-                </div>
-
-                <div class="detailedInfo detail__admin change" id="details-2">
-                  <div class="detailedInfos__wrapper">
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/length.png" alt="" />
-                        <p class="font-bold">Length of Road Monitored:</p>
-                      </span>
-                      <p class="pl-[56px]">5 meters</p>
-                    </div>
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/lanes.png" alt="" />
-                        <p class="font-bold">Number of Assessments:</p>
-                      </span>
-                      <p class="pl-[56px]">1 assessments</p>
-                    </div>
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/cracks-detected.png" alt="" />
-                        <p class="font-bold">Types of Cracks Detected:</p>
-                      </span>
-                      <span class="grid gap-2">
-                        <p class="pl-[56px]">Transverse Cracks (1)</p>
-                        <p class="pl-[56px]">Longitudinal Cracks (1)</p>
-                        <p class="pl-[56px]">Multiple Cracks (0)</p>
-                      </span>
-                    </div>
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/total-crack.png" alt="" />
-                        <p class="font-bold">Total Number of Cracks:</p>
-                      </span>
-                      <p class="pl-[56px]">2 cracks</p>
-                    </div>
-                    <div class="detailed-info admined">
-                      <span class="flex gap-[15px] items-center">
-                        <img src="/img/date.png" alt="" />
-                        <p class="font-bold">Date Last Updated:</p>
-                      </span>
-                      <p class="pl-[56px]">2025-02-28 12:53:20</p>
-                    </div>
-                  </div>
-                </div>
+                
               </div>
 
               <!-- <div class="overflow-y-auto detail__admin">
@@ -1765,8 +1722,10 @@ const dashboard = async (self) => {
 
   const sidePanel = document.querySelector(".sidePanel");
   const sidePanelBackdrop = document.querySelector(".sidePanel__backdrop");
+  const body = document.querySelector("body");
   sidePanel.classList.remove("open");
   sidePanelBackdrop.classList.remove("open");
+  body.classList.remove("overflow-hidden");
 };
 
 const manage = async (self) => {
@@ -1806,8 +1765,10 @@ const manage = async (self) => {
 
   const sidePanel = document.querySelector(".sidePanel");
   const sidePanelBackdrop = document.querySelector(".sidePanel__backdrop");
+  const body = document.querySelector("body");
   sidePanel.classList.remove("open");
   sidePanelBackdrop.classList.remove("open");
+  body.classList.remove("overflow-hidden");
 };
 
 const admin = async (self) => {
@@ -1817,7 +1778,7 @@ const admin = async (self) => {
 
   const mainPanel = document.querySelector(".mainPanel");
   mainPanel.innerHTML = `
-    <div class="manage w-full mx-auto grid justify-items-center items-start gap-3">
+    <div class="manage h-full w-full mx-auto grid justify-items-center content-start gap-3 overflow-y-auto">
       
     </div>
   `;
@@ -1826,8 +1787,183 @@ const admin = async (self) => {
 
   const sidePanel = document.querySelector(".sidePanel");
   const sidePanelBackdrop = document.querySelector(".sidePanel__backdrop");
+  const body = document.querySelector("body");
   sidePanel.classList.remove("open");
   sidePanelBackdrop.classList.remove("open");
+  body.classList.remove("overflow-hidden");
+};
+
+// ------------------------------------------ //
+
+const capitalizeFirstLetter = (string) => {
+  string.charAt(0).toUpperCase() + string.slice(1);
+};
+
+const getSolution = (crackType, crackSeverity) => {
+  if (crackType === "multiple") return "Reblocking";
+  if (crackSeverity === "narrow") return "Grooving and Sealing";
+  if (crackSeverity === "wide") return "Stitch Repair";
+  return "";
+};
+
+const downloadSummary = async (event, ID) => {
+  event.stopPropagation();
+  const summary = await fetchGroup(ID, "summary");
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Set initial position
+  let yPos = 20;
+
+  // Add location header (left-aligned)
+  doc.setFontSize(20);
+  doc.text(`${summary.name}, ${summary.address}`, 14, yPos); // Changed from 105 to 14 (left margin)
+  yPos += 10;
+
+  // Add Detailed Information header
+  doc.setFontSize(14);
+  doc.text("Detailed Information", 14, yPos);
+  yPos += 10;
+
+  // Add summary details
+  doc.setFontSize(12);
+  doc.text(
+    `Length of Road Monitored: ${summary.n_assess * 5} meters`,
+    14,
+    yPos
+  );
+  yPos += 8;
+  doc.text(`Number of Assessments: ${summary.n_assess} assessments`, 14, yPos);
+  yPos += 8;
+  doc.text("Types of Cracks Detected:", 14, yPos);
+  yPos += 8;
+
+  // Add crack types with counts
+  if (summary.n_cracks.trans > 0) {
+    doc.text(`- Transverse Cracks (${summary.n_cracks.trans})`, 20, yPos);
+    yPos += 8;
+  }
+  if (summary.n_cracks.longi > 0) {
+    doc.text(`- Longitudinal Cracks (${summary.n_cracks.longi})`, 20, yPos);
+    yPos += 8;
+  }
+  if (summary.n_cracks.multi > 0) {
+    doc.text(`- Multiple Cracks (${summary.n_cracks.multi})`, 20, yPos);
+    yPos += 8;
+  }
+
+  doc.text(
+    `Total Number of Cracks: ${Object.values(summary.n_cracks).reduce(
+      (a, b) => a + b,
+      0
+    )} cracks`,
+    14,
+    yPos
+  );
+  yPos += 8;
+  doc.text(`Date Last Updated: ${summary.date}`, 14, yPos);
+  yPos += 15;
+
+  // Process each assessment
+  for (let i = 0; i < summary.assessments.length; i++) {
+    const assessment = summary.assessments[i];
+    const assessmentDate = new Date(assessment.date).toLocaleDateString();
+
+    // Add assessment header
+    doc.setFontSize(12);
+    doc.setFont(undefined, "bold");
+    doc.text(`Assessment ${i + 1}`, 14, yPos);
+    doc.setFont(undefined, "normal");
+    yPos += 8;
+
+    // Add assessment details
+    doc.text(`Date: ${assessmentDate}`, 14, yPos);
+    yPos += 8;
+    doc.text(`Length of Assessment: 5m`, 14, yPos);
+    yPos += 8;
+
+    const midLat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
+    const midLng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
+    doc.text(
+      `Coordinates: ${midLat.toFixed(6)} ${midLng.toFixed(6)}`,
+      14,
+      yPos
+    );
+    yPos += 12;
+
+    // Add cracks table header
+    doc.setFont(undefined, "bold");
+    doc.text("Cracks", 14, yPos);
+    doc.setFont(undefined, "normal");
+    yPos += 8;
+
+    // Prepare cracks table data
+    const crackColumns = [
+      "#",
+      "Type",
+      "Severity",
+      "Length",
+      "Width",
+      "Affected Area",
+      "Solution",
+    ];
+    const crackRows = assessment.cracks.map((crack, index) => {
+      const affectedArea =
+        crack.crack_type === "multiple"
+          ? (
+              parseFloat(crack.crack_length) *
+              parseFloat(crack.crack_width || 0.5)
+            ).toFixed(2) + " m²"
+          : "-";
+
+      return [
+        index + 1,
+        capitalizeFirstLetter(crack.crack_type),
+        capitalizeFirstLetter(crack.crack_severity),
+        `${crack.crack_length}m`,
+        `${crack.crack_width || "0.5"}m`,
+        affectedArea,
+        getSolution(crack.crack_type, crack.crack_severity),
+      ];
+    });
+
+    // Add cracks table
+    doc.autoTable({
+      head: [crackColumns],
+      body: crackRows,
+      startY: yPos,
+      margin: { left: 14 },
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        valign: "middle",
+      },
+      headStyles: {
+        fillColor: [200, 200, 200],
+        textColor: [0, 0, 0],
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 30 },
+        6: { cellWidth: 30 },
+      },
+    });
+
+    yPos = doc.lastAutoTable.finalY + 15;
+
+    // Add page break if needed
+    if (yPos > 250 && i < summary.assessments.length - 1) {
+      doc.addPage();
+      yPos = 20;
+    }
+  }
+
+  doc.save(`Road_Assessment_Report_${summary.name.replace(/\s+/g, "_")}.pdf`);
 };
 
 // ------------------------------------------ //

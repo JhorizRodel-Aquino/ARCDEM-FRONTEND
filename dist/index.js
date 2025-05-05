@@ -2,8 +2,6 @@
 const url = "https://api.arcdem.site";
 // const url = "http://127.0.0.1:5000";
 
-// const url = "https://roadtrack-test.onrender.com";
-
 let selectedGroup;
 let openedId = 0;
 let openedMark = 0;
@@ -238,22 +236,9 @@ const fetchAssessments = async (assessID, cracks = false) => {
   }
 };
 
-const groupSorting = async (groupID, selected = "") => {
-  if (!selected) {
-    selectedGroup = document.getElementById("sortGroup").value;
-    // closeSubgrpDetails(
-    //   currSubgrpIDPopup,
-    //   currSubgrpParentIDPopup,
-    //   (all = true)
-    // );
-
-    displayGroupLevels();
-    return;
-  }
-  openedId = 0;
-  selectedGroup = selected;
-  console.log("okohdjkhjkhfsdf", groupID);
-  displayGroupLevel(selectedGroup, groupID);
+const groupSorting = async (groupID) => {
+  selectedGroup = document.getElementById("sortGroup").value;
+  displayGroupLevels();
 };
 
 const init = async () => {
@@ -380,7 +365,7 @@ const displayMarkersDetails = async (ID, lat, lng) => {
   // Run on page load and when media query changes
   resetOnSm(smMediaQuery);
   smMediaQuery.addEventListener("change", resetOnSm);
-  
+
   let crackDetails = document.getElementById("crackDetails");
   let index = 0;
 
@@ -432,9 +417,9 @@ const displayMarkersDetails = async (ID, lat, lng) => {
     const affected = document.getElementById(`crack-${index}-affect`);
 
     if (crack.crack_type.toLowerCase() === "multiple") {
-      affected.innerHTML = `<span class="font-bold">Affected Area: </span>${
-        (crack.crack_width * crack.crack_length).toFixed(3)
-      }m<sup>2</sup>`;
+      affected.innerHTML = `<span class="font-bold">Affected Area: </span>${(
+        crack.crack_width * crack.crack_length
+      ).toFixed(3)}m<sup>2</sup>`;
       type.innerHTML = `<span class="font-bold">Width: </span>${crack.crack_width}m`;
     } else if (
       crack.crack_type.toLowerCase() === "longitudinal" ||
@@ -452,15 +437,6 @@ const displayMarkersDetails = async (ID, lat, lng) => {
 
   const sideGIS = document.querySelector(".sideGIS");
   sideGIS.classList.add("open");
-};
-
-const handleAssessClick = (ID, lat, lng) => {
-  displayMarkersDetails(ID, lat, lng); // your original function
-
-  const marker = markers[`assID-${ID}`];
-  if (marker) {
-    marker.openPopup(); // ✅ show the popup when h6 is clicked
-  }
 };
 
 const resetZoom = () => {
@@ -525,13 +501,6 @@ const homePanel = async (param, groupID = 0) => {
     }
   });
 
-  // displayGroupDetails(groupLevels[0].id);
-
-  // if (!groupID) displayGroupDetails(groupLevels[0].id);
-  // else {
-  //   console.log("hioashs", !groupID);
-  //   displayGroupDetails(groupID);
-  // }
   resetMarkerColors();
   resetZoom();
   sideGIS.classList.remove("open");
@@ -546,11 +515,6 @@ const displayGroupLevels = async () => {
     groupNames.innerHTML += `
         <h6 id="group-${groupLevel.id}" onclick="displayGroupDetails(${groupLevel.id})">${groupLevel.name}</h6>
       `;
-
-    // const assess = await fetchGroup(groupLevel.id, "assessments");
-    // const key = `groupAss-${groupLevel.id}`;
-    // assessGroup[key] = assess.assessments;
-    // addMarker(assessGroup[key]);
   }
 };
 
@@ -598,7 +562,7 @@ const displayGroupDetails = async (ID) => {
       <div class="detailedInfo h-full overflow-y-auto" id="details-2">
         <span class="detailed-info title border-t-2 flex justify-between">
             <p class="font-bold  ">Summary Information</p>
-            <button id="downloadSummaryBtn" onclick="downloadSummary(${ID})"><img src="/img/download.png" class="w-[15px] h-[15px] md:w-[20px] md:h-[20px] lg:w-[25px] lg:h-[25px]" alt="" /></button>
+            <button id="downloadSummaryBtn" onclick="downloadSummary(event, ${ID})"><img src="/img/download.png" class="w-[15px] h-[15px] md:w-[20px] md:h-[20px] lg:w-[25px] lg:h-[25px]" alt="" /></button>
         </span>
         <div class="detailedInfos__wrapper">
           <div class="detailed-info">
@@ -684,145 +648,177 @@ const displayGroupDetails = async (ID) => {
   openedId = ID;
 };
 
-const downloadSummary = async (ID) => {
-  const summary = await fetchGroup(ID, "summary");
+const capitalizeFirstLetter = (string) => {
+  string.charAt(0).toUpperCase() + string.slice(1);
+};
 
+const getSolution = (crackType, crackSeverity) => {
+  if (crackType === "multiple") return "Reblocking";
+  if (crackSeverity === "narrow") return "Grooving and Sealing";
+  if (crackSeverity === "wide") return "Stitch Repair";
+  return "";
+};
+
+const downloadSummary = async (event, ID) => {
+  event.stopPropagation();
+  const summary = await fetchGroup(ID, "summary");
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const tableColumn = [
-    "Assessment Number",
-    "Coordinates",
-    "Crack Number",
-    "Crack Information",
-  ];
-  const tableRows = [];
+  // Set initial position
+  let yPos = 20;
 
-  summary.assessments.forEach((assessment, index) => {
-    const [startLat, startLng] = Array.isArray(assessment.start_coor)
-      ? assessment.start_coor
-      : assessment.start_coor.split(",").map(Number);
-    const [endLat, endLng] = Array.isArray(assessment.end_coor)
-      ? assessment.end_coor
-      : assessment.end_coor.split(",").map(Number);
-    const midLat = (startLat + endLat) / 2;
-    const midLng = (startLng + endLng) / 2;
-    const midCoordinates = `${midLat.toFixed(6)}, ${midLng.toFixed(6)}`;
+  // Add location header (left-aligned)
+  doc.setFontSize(20);
+  doc.text(`${summary.name}, ${summary.address}`, 14, yPos); // Changed from 105 to 14 (left margin)
+  yPos += 10;
 
-    // For each assessment, we set the initial row with the assessment number and coordinates
-    assessment.cracks.forEach((crack, crackIndex) => {
-      const assessmentRow = [
-        crackIndex === 0 ? `Assessment #${index + 1}` : "", // Only show assessment number for the first crack
-        crackIndex === 0 ? midCoordinates : "", // Only show coordinates for the first crack
-        `Crack #${crackIndex + 1}`,
-        `Type: ${capitalizeFirstLetter(
-          crack.crack_type
-        )}\nSeverity: ${capitalizeFirstLetter(crack.crack_severity)}\nLength: ${
-          crack.crack_length
-        }m\nWidth: ${
-          crack.crack_width == null ? "0.5" : `${crack.crack_width}`
-        }m`,
-      ];
-      tableRows.push(assessmentRow);
-    });
-  });
+  // Add Detailed Information header
+  doc.setFontSize(14);
+  doc.text("Detailed Information", 14, yPos);
+  yPos += 10;
 
-  doc.setFontSize(18);
+  // Add summary details
+  doc.setFontSize(12);
   doc.text(
-    `Detailed Report - ${summary.address}`,
-    105,
-    20,
-    null,
-    null,
-    "center"
+    `Length of Road Monitored: ${summary.n_assess * 5} meters`,
+    14,
+    yPos
   );
+  yPos += 8;
+  doc.text(`Number of Assessments: ${summary.n_assess} assessments`, 14, yPos);
+  yPos += 8;
+  doc.text("Types of Cracks Detected:", 14, yPos);
+  yPos += 8;
 
-  doc.autoTable({
-    head: [tableColumn],
-    body: tableRows,
-    startY: 30,
-    theme: "grid",
-    headStyles: {
-      fillColor: [210, 183, 70],
-      textColor: [0, 0, 0],
-      fontStyle: "bold",
-    },
-    styles: {
-      fontSize: 12,
-      textColor: [0, 0, 0],
-      cellPadding: 5,
-    },
-  });
+  // Add crack types with counts
+  if (summary.n_cracks.trans > 0) {
+    doc.text(`- Transverse Cracks (${summary.n_cracks.trans})`, 20, yPos);
+    yPos += 8;
+  }
+  if (summary.n_cracks.longi > 0) {
+    doc.text(`- Longitudinal Cracks (${summary.n_cracks.longi})`, 20, yPos);
+    yPos += 8;
+  }
+  if (summary.n_cracks.multi > 0) {
+    doc.text(`- Multiple Cracks (${summary.n_cracks.multi})`, 20, yPos);
+    yPos += 8;
+  }
 
-  // 3-column image layout after table
-  let startY = doc.lastAutoTable.finalY + 10;
-  let x = 10;
-  let y = startY;
-  let column = 0;
-  const imageWidth = 50;
-  const imageHeight = 95;
-  const padding = 10;
+  doc.text(
+    `Total Number of Cracks: ${Object.values(summary.n_cracks).reduce(
+      (a, b) => a + b,
+      0
+    )} cracks`,
+    14,
+    yPos
+  );
+  yPos += 8;
+  doc.text(`Date Last Updated: ${summary.date}`, 14, yPos);
+  yPos += 15;
 
+  // Process each assessment
   for (let i = 0; i < summary.assessments.length; i++) {
     const assessment = summary.assessments[i];
-    const imageUrl = `${url}/image/${assessment.filename}.jpg`;
-    const label = `Assessment #${i + 1}`;
+    const assessmentDate = new Date(assessment.date).toLocaleDateString();
 
-    try {
-      const imgData = await getImageBase64(imageUrl);
+    // Add assessment header
+    doc.setFontSize(12);
+    doc.setFont(undefined, "bold");
+    doc.text(`Assessment ${i + 1}`, 14, yPos);
+    doc.setFont(undefined, "normal");
+    yPos += 8;
 
-      // Check if there's enough space for the image
-      const remainingSpace = doc.internal.pageSize.height - y - 10; // 10px padding
+    // Add assessment details
+    doc.text(`Date: ${assessmentDate}`, 14, yPos);
+    yPos += 8;
+    doc.text(`Length of Assessment: 5m`, 14, yPos);
+    yPos += 8;
 
-      // If there's not enough space left, add a new page
-      if (remainingSpace < imageHeight + 16) {
-        doc.addPage();
-        x = 10;
-        y = 10;
-        column = 0;
-      }
+    const midLat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
+    const midLng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
+    doc.text(
+      `Coordinates: ${midLat.toFixed(6)} ${midLng.toFixed(6)}`,
+      14,
+      yPos
+    );
+    yPos += 12;
 
-      // Draw image
-      doc.addImage(imgData, "JPEG", x, y, imageWidth, imageHeight);
+    // Add cracks table header
+    doc.setFont(undefined, "bold");
+    doc.text("Cracks", 14, yPos);
+    doc.setFont(undefined, "normal");
+    yPos += 8;
 
-      // Draw label below image
-      doc.setFontSize(8);
-      doc.text(label, x, y + imageHeight + 4);
+    // Prepare cracks table data
+    const crackColumns = [
+      "#",
+      "Type",
+      "Severity",
+      "Length",
+      "Width",
+      "Affected Area",
+      "Solution",
+    ];
+    const crackRows = assessment.cracks.map((crack, index) => {
+      const affectedArea =
+        crack.crack_type === "multiple"
+          ? (
+              parseFloat(crack.crack_length) *
+              parseFloat(crack.crack_width || 0.5)
+            ).toFixed(2) + " m²"
+          : "-";
 
-      column++;
-      x += imageWidth + padding;
+      return [
+        index + 1,
+        capitalizeFirstLetter(crack.crack_type),
+        capitalizeFirstLetter(crack.crack_severity),
+        `${crack.crack_length}m`,
+        `${crack.crack_width || "0.5"}m`,
+        affectedArea,
+        getSolution(crack.crack_type, crack.crack_severity),
+      ];
+    });
 
-      // If 3 images per row, move to next row
-      if (column === 3) {
-        column = 0;
-        x = 10;
-        y += imageHeight + 16 + padding;
-      }
-    } catch (err) {
-      doc.setFontSize(10);
-      doc.text("Image failed to load", x, y);
-      column++;
-      x += imageWidth + padding;
+    // Add cracks table
+    doc.autoTable({
+      head: [crackColumns],
+      body: crackRows,
+      startY: yPos,
+      margin: { left: 14 },
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        valign: "middle",
+      },
+      headStyles: {
+        fillColor: [200, 200, 200],
+        textColor: [0, 0, 0],
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        1: { cellWidth: 25 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { cellWidth: 30 },
+        6: { cellWidth: 30 },
+      },
+    });
 
-      if (column === 3) {
-        column = 0;
-        x = 10;
-        y += imageHeight + 16 + padding;
-      }
+    yPos = doc.lastAutoTable.finalY + 15;
 
-      if (y > 250) {
-        doc.addPage();
-        x = 10;
-        y = 10;
-        column = 0;
-      }
+    // Add page break if needed
+    if (yPos > 250 && i < summary.assessments.length - 1) {
+      doc.addPage();
+      yPos = 20;
     }
   }
 
-  doc.save(`Summary-${summary.address}-${ID}.pdf`);
+  doc.save(`Road_Assessment_Report_${summary.name.replace(/\s+/g, "_")}.pdf`);
 };
 
-// Helper to fetch image and convert to Base64
 const getImageBase64 = (url) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -841,10 +837,6 @@ const getImageBase64 = (url) => {
     img.src = url;
   });
 };
-
-// Utility to capitalize first letter
-const capitalizeFirstLetter = (string) =>
-  string.charAt(0).toUpperCase() + string.slice(1);
 
 const resetMarkerColors = () => {
   const marks = Object.values(markers); // Assuming 'markers' is an object of marker instances
@@ -1010,6 +1002,13 @@ const closeGroupDetails = async (ID, animate = false) => {
   } else target.remove();
 };
 
+const zoomToPoints = async (markers) => {
+  const group = new L.featureGroup(markers);
+  map.fitBounds(group.getBounds(), {
+    padding: [350, 50], // adds 100px padding on all sides, feels like zooming out
+  });
+};
+
 map.on("click", () => {
   if (openedMarkId) {
     closeMarkerDetails();
@@ -1018,282 +1017,3 @@ map.on("click", () => {
 });
 
 init();
-
-/----------------------------------------/;
-const closeSubgrpDetails = async (ID, parentID, all = false) => {
-  closeAssessmentDetails();
-  removeMarker(assessGroup[`groupAss-${ID}`]);
-  const subgrpPopup = document.getElementById("subgroupPopup");
-  if (subgrpPopup) subgrpPopup.remove();
-
-  if (currSubgrpIDPopup != parentID && !all) {
-    displaySubgrpState = true;
-    displayAssessState = true;
-    currSubgrpIDPopup = parentID;
-
-    if (currSubgrpIDPopup != openedId) goForward(parentID);
-    else {
-      // currSubgrpParentIDPopup = 0;
-      let expanded = document.getElementById(`toggle-${openedId}`);
-      let sumDetails = document.getElementById(`details-${openedId}`);
-      expanded.addEventListener("click", () => {
-        sumDetails.classList.toggle("open");
-      });
-
-      removeMarker(assessGroup[`groupAss-${openedId}`]);
-      addMarker(assessGroup[`groupAss-${openedId}`], "yellow");
-    }
-  } else {
-    addMarker(assessGroup[`groupAss-${ID}`]);
-    currSubgrpIDPopup = 0;
-    currSubgrpParentIDPopup = 0;
-  }
-  delete assessGroup[`groupAss-${ID}`];
-};
-
-const addMarker = async (coords, color = "", popup = false) => {
-  const infoPanel = document.querySelector("#crack-details");
-  let markers = [];
-  let assessIndex = 0;
-  coords.forEach((coor) => {
-    assessIndex++;
-    const coors = coor.start_coor;
-    let marker;
-    if (color) marker = L.marker(coors, { icon: yellowIcon }).addTo(map);
-    // Opens popup by default;
-    else marker = L.marker(coors).addTo(map); // Opens popup by default;
-
-    // // Bind popup once, but don't open it yet
-    // marker.bindPopup(`Assessment ${assessIndex}`, { closeButton: false });
-
-    // Click event for opening the popup and showing crack details
-    marker.on("click", async () => {
-      // if (currentPopup) {
-      //   map.closePopup(currentPopup); // Close previous popup
-      // }
-
-      marker.openPopup(); // Open new popup
-      currentPopup = marker.getPopup(); // Store the opened popup
-
-      if (openedMark != coor.id) {
-        openedMark = coor.id;
-
-        // Fetch and display crack details
-        let lat = coors[0] < 0 ? "S" : "N";
-        let lon = coors[1] < 0 ? "E" : "W";
-
-        document.getElementById(
-          "coordinates"
-        ).innerHTML = `${coors[0]} ${lat}, ${coors[1]} ${lon}`;
-
-        // let grpNameElement = document.getElementById(`grpname-${groupID}`);
-        // let grpName = grpNameElement
-        //   ? grpNameElement.innerHTML
-        //   : "Unknown Group";
-        // document.getElementById("group").innerHTML = grpName;
-
-        const ancestors = await fetchGroup(coor.id, "ancestors");
-        console.log(ancestors);
-        document.getElementById("address").innerHTML = "";
-        let i = ancestors.length;
-        ancestors.forEach((ancestor) => {
-          i--;
-          console.log("jkahskjahs", i);
-          let comma = ", ";
-          if (i + 1 == ancestors.length) {
-            comma = "";
-          }
-          console.log("yow", i + 1 !== ancestors.length);
-          let func = `goBack(${ancestor.id}, ${i})`;
-          if (popup && ancestors.length - i != ancestors.length) {
-            func = `closeSubgrpDetails(${ancestors[i - 1].id}, ${
-              ancestors[i].id
-            })`;
-          }
-          if (i + 1 == ancestors.length) func = `goBack(${ancestor.id}, ${i})`;
-          document.getElementById("address").innerHTML += `
-            <a onclick="${func}" class=""><p>${comma}${ancestor.name}</p></a>
-          `;
-        });
-
-        let crackDetails = await fetchCracks(coor.id);
-        let index = 0;
-        infoPanel.innerHTML = ""; // Clear existing content
-
-        crackDetails.cracks.forEach((crack) => {
-          index++;
-
-          let sol =
-            crack.crack_type === "longitudinal" ||
-            crack.crack_type === "transverse"
-              ? "Asphalt"
-              : "Reblock";
-
-          infoPanel.innerHTML += `
-          <div class="crack-info grid gap-2">
-            <h3 class="font-bold">Crack ${index}:</h3>
-            <p><span class="font-bold">Type: </span>${crack.crack_type}</p>
-            <p><span class="font-bold">Severity: </span>${crack.crack_severity}</p>
-            <p><span class="font-bold">Recommended Solution: </span>${sol}</p>
-          </div>
-        `;
-        });
-
-        infoPanel.innerHTML += `
-            <img src="crack.png" class="object-fit p-5">
-        `;
-
-        document.getElementById("AssessCloseBtn").innerHTML = `
-          <a onclick="closeAssessmentDetails()">&times;</a>
-        `;
-
-        document.getElementById("crack").classList.remove("-translate-x-full");
-        document.getElementById("crack").style.left = "0";
-      }
-    });
-
-    // Ensure only the first marker in the **entire session** opens its popup
-    if (!firstPopupOpened) {
-      marker.openPopup();
-      currentPopup = marker.getPopup();
-      firstPopupOpened = true;
-    }
-
-    markers.push(marker);
-  });
-  if (color) markerArr = markers;
-};
-
-const removeMarker = (coords) => {
-  coords.forEach((coor) => {
-    const [lat, lng] = coor.start_coor; // Extract lat & lng from array
-
-    map.eachLayer((layer) => {
-      if (layer instanceof L.Marker) {
-        let markerLatLng = layer.getLatLng();
-        if (markerLatLng.lat === lat && markerLatLng.lng === lng) {
-          map.removeLayer(layer);
-        }
-      }
-    });
-  });
-};
-
-// function zoomToPoints(coords) {
-//   const bounds = L.latLngBounds(coords);
-//   map.fitBounds(bounds, { padding: [50, 50] });
-// }
-
-function zoomToPoints(markers) {
-  const group = new L.featureGroup(markers);
-  map.fitBounds(group.getBounds(), {
-    padding: [350, 50], // adds 100px padding on all sides, feels like zooming out
-  });
-}
-
-const goBack = (ID, index) => {
-  closeAssessmentDetails();
-
-  let option;
-  if (index == 0) option = "region";
-  else if (index == 1) option = "province";
-  else if (index == 2) option = "city";
-
-  if (document.getElementById("subgroupPopup") && currSubgrpIDPopup != ID) {
-    closeSubgrpDetails(
-      currSubgrpIDPopup,
-      currSubgrpParentIDPopup,
-      (all = true)
-    );
-  }
-
-  if (currSubgrpIDPopup == ID) return;
-
-  document.getElementById("sortGroup").value = option;
-  groupSorting(ID, option);
-};
-
-const closeAssessmentDetails = () => {
-  document.getElementById("crack").style.left = "-100%";
-  openedMark = 0;
-  map.closePopup();
-};
-
-async function generateSummary(ID) {
-  let data = await fetchGroup(ID, "summary");
-  console.log(data);
-  const container = document.createElement("div");
-  container.classList.add("container");
-  container.id = "report-container";
-
-  container.innerHTML = `
-            <h2 class="title">Road Assessment Report</h2>
-            <div class="info" id="info-container"></div>
-            <h3 class="title">Assessments</h3>
-            <div id="assessments-container"></div>
-        `;
-
-  document.body.appendChild(container);
-  populateInfo(data);
-  generateAssessments(data);
-}
-
-async function populateInfo(data) {
-  const infoContainer = document.getElementById("info-container");
-  infoContainer.innerHTML = `
-            <p><strong>Address:</strong> ${data.address}</p>
-            <p><strong>Total Assessments:</strong> ${data.totalAssessments}</p>
-            <p><strong>Crack Types:</strong> ${data.crackTypes}</p>
-            <p><strong>Latest Update:</strong> ${data.latestUpdate}</p>
-        `;
-}
-
-async function generateAssessments(data) {
-  const container = document.getElementById("assessments-container");
-  container.innerHTML = "";
-  console.log(data.assessments);
-  data.assessments.forEach((assessment) => {
-    const assessmentDiv = document.createElement("div");
-    assessmentDiv.classList.add("assessment-container");
-
-    const table = document.createElement("table");
-    table.classList.add("assessment-table");
-    table.innerHTML = `
-                <tr><th colspan="2">Assessment ID: ${assessment.id}</th></tr>
-                <tr><td><strong>Date</strong></td><td>${
-                  assessment.date
-                }</td></tr>
-                <tr><td><strong>Start Coordinates</strong></td><td>${assessment.start_coor.join(
-                  ", "
-                )}</td></tr>
-                <tr><td><strong>End Coordinates</strong></td><td>${assessment.end_coor.join(
-                  ", "
-                )}</td></tr>
-                <tr><th colspan="2">Crack Details</th></tr>
-                ${assessment.cracks
-                  .map(
-                    (crack) =>
-                      `<tr><td>${crack.crack_type}</td><td>${crack.crack_severity}</td></tr>`
-                  )
-                  .join("")}
-            `;
-
-    const imageDiv = document.createElement("div");
-    imageDiv.classList.add("image-container");
-
-    const img = document.createElement("img");
-    img.classList.add("assessment-image");
-    // img.src = `images/assessment_${assessment.id}.png`;
-    img.src = `crack.png`;
-    img.alt = `Assessment ${assessment.id}`;
-
-    imageDiv.appendChild(img);
-    assessmentDiv.appendChild(table);
-    assessmentDiv.appendChild(imageDiv);
-    container.appendChild(assessmentDiv);
-  });
-}
-
-// Add markers to the map
-
-// displayGroupLevel(selectedGroup);
