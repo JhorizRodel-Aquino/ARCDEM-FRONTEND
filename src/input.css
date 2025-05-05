@@ -224,7 +224,7 @@
 
   /* ------------------------loginpage------------------- */
   input {
-    @apply bg-light border-black border-[0.5px] rounded-md p-1;
+    @apply bg-light border-black border-[0.5px] rounded-md p-1 w-full;
   }
 
   input:focus {

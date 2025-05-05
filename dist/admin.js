@@ -1812,43 +1812,62 @@ const downloadSummary = async (event, ID) => {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
+  // Set page dimensions and margins
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  const contentWidth = pageWidth - margin * 2;
+
   // Set initial position
   let yPos = 20;
 
-  // Add location header (left-aligned)
-  doc.setFontSize(20);
-  doc.text(`${summary.name}, ${summary.address}`, 14, yPos); // Changed from 105 to 14 (left margin)
+  // Add location header (left-aligned and bold)
+  doc.setFontSize(16);
+  doc.setFont(undefined, "bold");
+  doc.text(`${summary.name}, ${summary.address}`, margin, yPos);
+  doc.setFont(undefined, "normal");
   yPos += 10;
 
   // Add Detailed Information header
   doc.setFontSize(14);
-  doc.text("Detailed Information", 14, yPos);
+  doc.text("Detailed Information", margin, yPos);
   yPos += 10;
 
   // Add summary details
   doc.setFontSize(12);
   doc.text(
     `Length of Road Monitored: ${summary.n_assess * 5} meters`,
-    14,
+    margin,
     yPos
   );
   yPos += 8;
-  doc.text(`Number of Assessments: ${summary.n_assess} assessments`, 14, yPos);
+  doc.text(
+    `Number of Assessments: ${summary.n_assess} assessments`,
+    margin,
+    yPos
+  );
   yPos += 8;
-  doc.text("Types of Cracks Detected:", 14, yPos);
+  doc.text("Types of Cracks Detected:", margin, yPos);
   yPos += 8;
 
   // Add crack types with counts
   if (summary.n_cracks.trans > 0) {
-    doc.text(`- Transverse Cracks (${summary.n_cracks.trans})`, 20, yPos);
+    doc.text(
+      `- Transverse Cracks (${summary.n_cracks.trans})`,
+      margin + 6,
+      yPos
+    );
     yPos += 8;
   }
   if (summary.n_cracks.longi > 0) {
-    doc.text(`- Longitudinal Cracks (${summary.n_cracks.longi})`, 20, yPos);
+    doc.text(
+      `- Longitudinal Cracks (${summary.n_cracks.longi})`,
+      margin + 6,
+      yPos
+    );
     yPos += 8;
   }
   if (summary.n_cracks.multi > 0) {
-    doc.text(`- Multiple Cracks (${summary.n_cracks.multi})`, 20, yPos);
+    doc.text(`- Multiple Cracks (${summary.n_cracks.multi})`, margin + 6, yPos);
     yPos += 8;
   }
 
@@ -1857,45 +1876,65 @@ const downloadSummary = async (event, ID) => {
       (a, b) => a + b,
       0
     )} cracks`,
-    14,
+    margin,
     yPos
   );
   yPos += 8;
-  doc.text(`Date Last Updated: ${summary.date}`, 14, yPos);
-  yPos += 15;
+  doc.text(`Date Last Updated: ${summary.date}`, margin, yPos);
+  yPos += 20; // Extra space before assessments
 
   // Process each assessment
   for (let i = 0; i < summary.assessments.length; i++) {
     const assessment = summary.assessments[i];
     const assessmentDate = new Date(assessment.date).toLocaleDateString();
 
+    // Check if we need a new page (with extra space for spacing)
+    if (yPos > doc.internal.pageSize.height - 120) {
+      // Increased from 100 to 120 for spacing
+      doc.addPage();
+      yPos = 20;
+    }
+
     // Add assessment header
     doc.setFontSize(12);
     doc.setFont(undefined, "bold");
-    doc.text(`Assessment ${i + 1}`, 14, yPos);
+    doc.text(`Assessment ${i + 1}`, margin, yPos);
     doc.setFont(undefined, "normal");
-    yPos += 8;
+
+    // Try to add image (right side) aligned with assessment header
+    try {
+      const imageUrl = `https://api.arcdem.site/image/${assessment.filename}.jpg`;
+      const imgData = await getImageBase64(imageUrl);
+
+      // Image dimensions (50px width, 2.5x height)
+      const imgWidth = 45;
+      const imgHeight = imgWidth * 2; // 2.5x the height
+
+      // Position image to the right, aligned with assessment header
+      const imgX = pageWidth - margin - imgWidth;
+      const imgY = yPos; // Same Y position as assessment header
+
+      doc.addImage(imgData, "JPEG", imgX, imgY, imgWidth, imgHeight);
+    } catch (error) {
+      console.error(`Failed to load image for assessment ${i + 1}:`, error);
+    }
 
     // Add assessment details
-    doc.text(`Date: ${assessmentDate}`, 14, yPos);
-    yPos += 8;
-    doc.text(`Length of Assessment: 5m`, 14, yPos);
-    yPos += 8;
+    doc.text(`Date: ${assessmentDate}`, margin, yPos + 8);
+    doc.text(`Length of Assessment: 5m`, margin, yPos + 16);
 
     const midLat = (assessment.start_coor[0] + assessment.end_coor[0]) / 2;
     const midLng = (assessment.start_coor[1] + assessment.end_coor[1]) / 2;
     doc.text(
       `Coordinates: ${midLat.toFixed(6)} ${midLng.toFixed(6)}`,
-      14,
-      yPos
+      margin,
+      yPos + 24
     );
-    yPos += 12;
 
     // Add cracks table header
     doc.setFont(undefined, "bold");
-    doc.text("Cracks", 14, yPos);
+    doc.text("Cracks", margin, yPos + 36);
     doc.setFont(undefined, "normal");
-    yPos += 8;
 
     // Prepare cracks table data
     const crackColumns = [
@@ -1927,43 +1966,64 @@ const downloadSummary = async (event, ID) => {
       ];
     });
 
-    // Add cracks table
+    // Add cracks table (left side)
     doc.autoTable({
       head: [crackColumns],
       body: crackRows,
-      startY: yPos,
-      margin: { left: 14 },
+      startY: yPos + 40,
+      margin: { left: margin, right: margin + 60 }, // Leave 60px on right for image
       styles: {
-        fontSize: 10,
-        cellPadding: 2,
+        fontSize: 9,
+        cellPadding: 1.5,
         valign: "middle",
+        overflow: "linebreak",
+        halign: "center",
       },
       headStyles: {
         fillColor: [200, 200, 200],
         textColor: [0, 0, 0],
         fontStyle: "bold",
+        textPadding: 2,
+      },
+      bodyStyles: {
+        textPadding: 2,
       },
       columnStyles: {
-        0: { cellWidth: 10 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 20 },
-        4: { cellWidth: 20 },
-        5: { cellWidth: 30 },
-        6: { cellWidth: 30 },
+        0: { cellWidth: 8 },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 15 },
+        4: { cellWidth: 15 },
+        5: { cellWidth: 25 },
+        6: { cellWidth: 25 },
       },
     });
 
-    yPos = doc.lastAutoTable.finalY + 15;
+    // Add triple spacing between assessments (approximately 24 units)
+    yPos = doc.lastAutoTable.finalY + 44;
 
-    // Add page break if needed
-    if (yPos > 250 && i < summary.assessments.length - 1) {
+    // Add page break if needed (with extra space for spacing)
+    if (
+      yPos > doc.internal.pageSize.height - 40 &&
+      i < summary.assessments.length - 1
+    ) {
       doc.addPage();
       yPos = 20;
     }
   }
 
   doc.save(`Road_Assessment_Report_${summary.name.replace(/\s+/g, "_")}.pdf`);
+};
+
+const getImageBase64 = async (url) => {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 };
 
 // ------------------------------------------ //
@@ -1973,7 +2033,7 @@ const init = async () => {
   const profile = await fetchProfile();
   document.getElementById("profile").innerHTML = `
       <span
-        class="overflow-hidden w-20 object-cover"
+        class="overflow-hidden w-10 md:w-16 lg:w-20 object-cover"
         ><img
           src="../img/admin.png"
           alt=""
